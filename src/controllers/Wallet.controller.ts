@@ -44,7 +44,7 @@ class walletController {
     static async getWalletList(req: Request, res: Response) {
         try {
             const walletRepository = AppDataSource.getRepository(Wallet);
-            let walletList = await walletRepository.find({relations: ['currency']});
+            let walletList = await walletRepository.find({relations: ['currency', 'icon']});
             if (walletList) {
                 res.status(200).json({
                     message: "Success",
