@@ -1,6 +1,6 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne} from "typeorm";
 import {Currency} from "./Currency";
-import {WalletDetail} from "./WalletDetail";
+import {WalletRole} from "./WalletRole";
 import {IconWallet} from "./IconWallet";
 
 @Entity()
@@ -21,7 +21,7 @@ export class Wallet {
     @Column({type: 'int'})
     public amountOfMoney: number;
 
-    @OneToMany(() => WalletDetail, walletDetails => walletDetails.wallet)
-    walletDetails: WalletDetail[];
+    @OneToMany(() => WalletRole, walletRoles => walletRoles.wallet)
+    walletRoles: WalletRole[];
 
 }
