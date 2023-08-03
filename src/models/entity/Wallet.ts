@@ -17,7 +17,7 @@ export class Wallet {
     @ManyToOne(() => Currency, currency => currency.wallet)
     public currency: Currency;
 
-    @Column({type: 'number'})
+    @Column({type: 'int'})
     public amountOfMoney: number;
 
     @OneToMany(() => WalletDetail, walletDetails => walletDetails.wallet)

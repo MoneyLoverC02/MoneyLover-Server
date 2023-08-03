@@ -1,5 +1,9 @@
 import express, {Request, Response} from "express";
+import cors from 'cors'
+import bodyParser from 'body-parser'
 import {AppDataSource} from "./src/models/data-source";
+import userRouter from "./src/routers/User.router";
+import walletRouter from "./src/routers/Wallet.router";
 
 AppDataSource.initialize()
     .then(() => {
@@ -10,7 +14,12 @@ AppDataSource.initialize()
     });
 
 const app = express();
+app.use(cors());
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.json());
+app.use('/api', userRouter);
+app.use('/api', walletRouter);
 
-app.listen(3000, () => {
-    console.log("Server is running at http://localhost:3000");
+app.listen(4000, () => {
+    console.log("Server is running at http://localhost:4000");
 });
