@@ -3,7 +3,7 @@ import {Wallet} from "./Wallet";
 
 @Entity()
 
-export class Icon {
+export class IconWallet {
     @PrimaryGeneratedColumn()
     public readonly id: number;
 

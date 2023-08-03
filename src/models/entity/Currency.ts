@@ -14,6 +14,9 @@ export class Currency {
     public icon: string;
 
     @Column({type: 'varchar'})
+    public subname: string;
+
+    @Column({type: 'varchar'})
     public sign: string;
 
     @OneToMany(() => Wallet, wallet => wallet.currency)
