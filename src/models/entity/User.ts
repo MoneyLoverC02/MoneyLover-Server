@@ -1,5 +1,5 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany} from "typeorm";
-import {WalletDetail} from "./WalletDetail";
+import {WalletRole} from "./WalletRole";
 
 @Entity()
 
@@ -13,6 +13,6 @@ export class User {
     @Column({type: 'varchar'})
     public password: string;
 
-    @OneToMany(() => WalletDetail, walletDetails => walletDetails.user)
-    walletDetails: WalletDetail[];
+    @OneToMany(() => WalletRole, walletRoles => walletRoles.user)
+    walletRoles: WalletRole[];
 }
