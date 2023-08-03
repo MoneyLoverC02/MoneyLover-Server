@@ -13,6 +13,6 @@ export class User {
     @Column({type: 'varchar'})
     public password: string;
 
-    @OneToMany(() => WalletRole, walletDetails => walletDetails.user)
-    walletDetails: WalletRole[];
+    @OneToMany(() => WalletRole, walletRoles => walletRoles.user)
+    walletRoles: WalletRole[];
 }

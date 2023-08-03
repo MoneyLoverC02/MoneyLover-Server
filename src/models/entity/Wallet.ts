@@ -21,7 +21,7 @@ export class Wallet {
     @Column({type: 'int'})
     public amountOfMoney: number;
 
-    @OneToMany(() => WalletRole, walletDetails => walletDetails.wallet)
-    walletDetails: WalletRole[];
+    @OneToMany(() => WalletRole, walletRoles => walletRoles.wallet)
+    walletRoles: WalletRole[];
 
 }

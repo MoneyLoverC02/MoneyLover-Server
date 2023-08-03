@@ -6,6 +6,7 @@ import userRouter from "./src/routers/User.router";
 import walletRouter from "./src/routers/Wallet.router";
 import currencyRouter from "./src/routers/Currency.router";
 import iconWalletRouter from "./src/routers/IconWallet.router";
+import walletRoleRouter from "./src/routers/WalletRole.router";
 
 AppDataSource.initialize()
     .then(() => {
@@ -23,6 +24,7 @@ app.use('/api', userRouter);
 app.use('/api', walletRouter);
 app.use('/api', currencyRouter);
 app.use('/api', iconWalletRouter);
+app.use('/api', walletRoleRouter);
 
 app.listen(4000, () => {
     console.log("Server is running at http://localhost:4000");

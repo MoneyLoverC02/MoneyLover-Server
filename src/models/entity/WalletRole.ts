@@ -8,10 +8,10 @@ export class WalletRole {
     @PrimaryGeneratedColumn()
     public readonly id: number;
 
-    @ManyToOne(() => User, user => user.walletDetails)
+    @ManyToOne(() => User, user => user.walletRoles)
     public user: User;
 
-    @ManyToOne(() => Wallet, wallet => wallet.walletDetails)
+    @ManyToOne(() => Wallet, wallet => wallet.walletRoles)
     public wallet: Wallet;
 
     @Column({type: 'varchar'})
