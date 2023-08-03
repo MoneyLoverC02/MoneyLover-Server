@@ -1,6 +1,7 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne} from "typeorm";
 import {Currency} from "./Currency";
 import {WalletDetail} from "./WalletDetail";
+import {IconWallet} from "./IconWallet";
 
 @Entity()
 
@@ -11,8 +12,8 @@ export class Wallet {
     @Column({type: 'varchar'})
     public name: string;
 
-    @Column({type: 'varchar'})
-    public icon: string;
+    @ManyToOne(() => IconWallet, icon => icon.wallet)
+    public icon: IconWallet;
 
     @ManyToOne(() => Currency, currency => currency.wallet)
     public currency: Currency;
