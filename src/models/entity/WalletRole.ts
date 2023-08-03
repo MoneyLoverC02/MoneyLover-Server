@@ -4,7 +4,7 @@ import {Wallet} from "./Wallet";
 
 @Entity()
 
-export class WalletDetail {
+export class WalletRole {
     @PrimaryGeneratedColumn()
     public readonly id: number;
 

@@ -5,5 +5,7 @@ const walletRouter = express.Router();
 
 walletRouter.post('/wallets', walletController.createWallet);
 walletRouter.get('/wallets', walletController.getWalletList);
+walletRouter.get('/wallets/:id', walletController.getWallet)
+walletRouter.put('/wallets/:id', walletController.updateWallet);
 
 export default walletRouter;
