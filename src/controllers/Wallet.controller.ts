@@ -15,11 +15,11 @@ class walletController {
 
     static async createWallet(req: Request, res: Response) {
         try {
-            const {name, iconID, currencyID, amountOfMoney} = req.body;
-            let wallet = await walletController.walletRepository.findOneBy({name});
+            const { name, iconID, currencyID, amountOfMoney } = req.body;
+            let wallet = await walletController.walletRepository.findOneBy({ name });
             if (!wallet) {
-                let currency = await walletController.currencyRepository.findOneBy({id: +currencyID});
-                let iconWallet = await walletController.iconWalletRepository.findOneBy({id: +iconID});
+                let currency = await walletController.currencyRepository.findOneBy({ id: +currencyID });
+                let iconWallet = await walletController.iconWalletRepository.findOneBy({ id: +iconID });
                 if (currency && iconWallet) {
                     let newWallet = new Wallet();
                     newWallet.name = name;
@@ -112,6 +112,7 @@ class walletController {
                 } else {
                     res.status(200).json({
                         message: "No data!",
+                        walletList: walletList
                     });
                 }
             } else {
