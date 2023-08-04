@@ -1,6 +1,7 @@
-import {Request, Response} from "express";
-import {AppDataSource} from "../models/data-source";
-import {User} from "../models/entity/User";
+import { Request, Response } from "express";
+import { AppDataSource } from "../models/data-source";
+import { User } from "../models/entity/User";
+import { Wallet } from "../models/entity/Wallet";
 
 class userController {
     static userRepository = AppDataSource.getRepository(User);
@@ -21,8 +22,29 @@ class userController {
                     })
                 }
             } else {
-                res.status(500).json({
+                res.status(200).json({
                     message: "Email already exist"
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+    }
+
+    static async login(req: Request, res: Response) {
+        try {
+            const userRepository = AppDataSource.getRepository(User);
+            let user = await userRepository.findOneBy(req.body);
+            if (user) {
+                res.status(200).json({
+                    message: "Login success!",
+                    user
+                })
+            } else {
+                res.status(200).json({
+                    message: "Email or password wrong"
                 });
             }
         } catch (e) {
@@ -34,7 +56,8 @@ class userController {
 
     static async getListUser(req: Request, res: Response) {
         try {
-            const users = await userController.userRepository.find();
+            const userRepository = AppDataSource.getRepository(User);
+            const users = await userRepository.find();
             if (users) {
                 res.status(200).json({
                     message: "Get list users successfully",
@@ -47,23 +70,6 @@ class userController {
             })
         }
     }
-
-    static async getUser(req: Request, res: Response) {
-        try {
-            const user = await userController.userRepository.findOneBy({id: +req.params.id});
-            if (user) {
-                res.status(200).json({
-                    message: "Get user successfully",
-                    user: user
-                })
-            }
-        } catch (err) {
-            res.status(500).json({
-                message: err.message
-            })
-        }
-    }
-
 
 }
 
