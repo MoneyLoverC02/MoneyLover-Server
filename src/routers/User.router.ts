@@ -5,7 +5,7 @@ const userRouter = express.Router();
 
 userRouter.post('/users',userController.createUser);
 userRouter.get('/users', userController.getListUser);
+userRouter.post('/login', userController.login);
 // userRouter.get('/users/:id', userController.getUser);
-userRouter.get('/users/:id/wallets', userController.getWalletList);
 
 export default userRouter;
