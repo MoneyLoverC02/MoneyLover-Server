@@ -56,8 +56,7 @@ class userController {
 
     static async getListUser(req: Request, res: Response) {
         try {
-            const userRepository = AppDataSource.getRepository(User);
-            const users = await userRepository.find();
+            const users = await userController.userRepository.find();
             if (users) {
                 res.status(200).json({
                     message: "Get list users successfully",

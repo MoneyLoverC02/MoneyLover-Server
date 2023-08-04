@@ -5,7 +5,6 @@ import {Currency} from "../models/entity/Currency";
 import {IconWallet} from "../models/entity/IconWallet";
 import {WalletRole} from "../models/entity/WalletRole";
 import {User} from "../models/entity/User";
-import WalletRoleController from "./WalletRole.controller";
 
 class walletController {
     static userRepository = AppDataSource.getRepository(User);
