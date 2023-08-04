@@ -90,6 +90,15 @@ class WalletRoleController {
         }
     }
 
+    static async deleteWalletRoles(walletID) {
+        let deletedWalletRole = await WalletRoleController.walletRoleRepository.delete({
+            wallet: {
+                id: walletID
+            }
+        });
+        return deletedWalletRole.affected;
+    }
+
 }
 
 export default WalletRoleController;

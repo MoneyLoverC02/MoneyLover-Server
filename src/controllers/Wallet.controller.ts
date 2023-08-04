@@ -132,7 +132,7 @@ class walletController {
         try {
             let walletID = +req.params.walletID;
             let userID = +req.params.userID;
-            let walletRole = await WalletRoleController.getWalletRole(walletID, userID)
+            let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole === 'owner') {
                 const updatedWallet = await walletController.walletRepository.find({
                     relations: {
@@ -166,6 +166,33 @@ class walletController {
             } else {
                 res.status(500).json({
                     message: "No permission to update!",
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
+    static async deleteWallet(req: Request, res: Response) {
+        try {
+            let walletID = +req.params.walletID;
+            let userID = +req.params.userID;
+            let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
+            if (walletRole === 'owner') {
+                const resultDeletedWalletRole = await WalletRoleController.deleteWalletRoles(walletID);
+                if (resultDeletedWalletRole) {
+                    const deletedWallet = await walletController.walletRepository.delete({id: walletID});
+                    if (deletedWallet.affected) {
+                        res.status(200).json({
+                            message: "Delete wallet success!",
+                        });
+                    }
+                }
+            } else {
+                res.status(500).json({
+                    message: "No permission to delete!",
                 });
             }
         } catch (e) {
