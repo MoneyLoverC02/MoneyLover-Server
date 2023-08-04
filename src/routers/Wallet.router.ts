@@ -3,9 +3,9 @@ import walletController from "../controllers/Wallet.controller";
 
 const walletRouter = express.Router();
 
-walletRouter.post('/wallets', walletController.createWallet);
-walletRouter.get('/wallets', walletController.getWalletList);
-// walletRouter.get('/wallets/:id', walletController.getWallet)
-walletRouter.put('/wallets/:id', walletController.updateWallet);
+walletRouter.post('/wallets', walletController.createWallet); //ok
+walletRouter.get('/wallets', walletController.getWalletList); //ok
+walletRouter.get('/wallets/:id', walletController.getWallet111) //ok
+walletRouter.get('/wallets/:id', walletController.getWallet) //ok
 
 export default walletRouter;

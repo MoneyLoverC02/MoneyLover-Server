@@ -3,6 +3,7 @@ import {AppDataSource} from "../models/data-source";
 import {WalletRole} from "../models/entity/WalletRole";
 import {Wallet} from "../models/entity/Wallet";
 import {User} from "../models/entity/User";
+import walletController from "./Wallet.controller";
 
 
 class WalletRoleController {
@@ -33,6 +34,10 @@ class WalletRoleController {
         }
     }
 
+    static async getAll(req:Request, res:Response){
+        let result = await WalletRoleController.walletRoleRepository.find()
+        res.json(result)
+    }
 }
 
 export default WalletRoleController;

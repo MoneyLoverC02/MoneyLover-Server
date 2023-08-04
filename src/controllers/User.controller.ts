@@ -2,18 +2,18 @@ import {Request, Response} from "express";
 import {AppDataSource} from "../models/data-source";
 import {User} from "../models/entity/User";
 
-const userRepository = AppDataSource.getRepository(User);
-
 class userController {
+    static userRepository = AppDataSource.getRepository(User);
+
     static async createUser(req: Request, res: Response) {
         try {
             const {email, password} = req.body;
-            let user = await userRepository.findOneBy({email: email});
+            let user = await userController.userRepository.findOneBy({email: email});
             if (!user) {
                 let newUser = new User();
                 newUser.email = email;
                 newUser.password = password;
-                let result = await userRepository.save(newUser);
+                let result = await userController.userRepository.save(newUser);
                 if (result) {
                     res.status(200).json({
                         message: "Creat user success!",
@@ -32,9 +32,10 @@ class userController {
         }
     }
 
+
     static async getListUser(req: Request, res: Response) {
         try {
-            const users = await userRepository.find();
+            const users = await userController.userRepository.find();
             if (users) {
                 res.status(200).json({
                     message: "Get list users successfully",
@@ -47,8 +48,21 @@ class userController {
             })
         }
     }
-
-
+    static async getUser(req: Request, res: Response) {
+        try {
+            const users = await userController.userRepository.findOneBy({id:+req.params.id});
+            if (users) {
+                res.status(200).json({
+                    message: "Get user successfully",
+                    user: users
+                })
+            }
+        } catch (err) {
+            res.status(500).json({
+                message: err.message
+            })
+        }
+    }
 }
 export default userController;
 
