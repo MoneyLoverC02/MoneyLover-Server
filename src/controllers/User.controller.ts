@@ -63,38 +63,6 @@ class userController {
             })
         }
     }
-
-
-    static async getListUser(req: Request, res: Response) {
-        try {
-            const users = await userController.userRepository.find();
-            if (users) {
-                res.status(200).json({
-                    message: "Get list users successfully",
-                    listUser: users
-                })
-            }
-        } catch (err) {
-            res.status(500).json({
-                message: err.message
-            })
-        }
-    }
-    static async getUser(req: Request, res: Response) {
-        try {
-            const users = await userController.userRepository.findOneBy({id:+req.params.id});
-            if (users) {
-                res.status(200).json({
-                    message: "Get user successfully",
-                    user: users
-                })
-            }
-        } catch (err) {
-            res.status(500).json({
-                message: err.message
-            })
-        }
-    }
 }
+// @ts-ignore
 export default userController;
-
