@@ -204,4 +204,4 @@ class walletController {
 
 }
 
-export default walletController
+export default walletController;
