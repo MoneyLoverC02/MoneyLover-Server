@@ -1,7 +1,9 @@
 import express from "express";
+import auth from "../middlewares/auth";
 import walletController from "../controllers/Wallet.controller";
 
 const walletRouter = express.Router();
+walletRouter.use(auth);
 
 walletRouter.post('/users/wallets', walletController.createWallet);
 walletRouter.get('/users/:userID/wallets', walletController.getWalletList); // Lấy info all ví của user
