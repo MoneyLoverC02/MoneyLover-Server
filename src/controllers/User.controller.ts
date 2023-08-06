@@ -26,7 +26,7 @@ class userController {
                     });
                 }
             } else {
-                res.status(500).json({
+                res.status(200).json({
                     message: "Email already exist"
                 });
             }
@@ -79,22 +79,6 @@ class userController {
                 res.status(200).json({
                     message: "Get list users successfully",
                     listUser: users
-                });
-            }
-        } catch (err) {
-            res.status(500).json({
-                message: err.message
-            });
-        }
-    }
-
-    static async getUser(req: Request, res: Response) {
-        try {
-            const user = await userController.userRepository.findOneBy({id: +req.params.id});
-            if (user) {
-                res.status(200).json({
-                    message: "Get user successfully",
-                    user: user
                 });
             }
         } catch (err) {
