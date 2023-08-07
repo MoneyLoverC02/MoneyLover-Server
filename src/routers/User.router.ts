@@ -1,11 +1,12 @@
 import express from "express";
 import userController from "../controllers/User.controller";
+import auth from "../middlewares/auth";
 
 const userRouter = express.Router();
+userRouter.use(auth);
 
-userRouter.post('/users',userController.createUser);
 userRouter.get('/users', userController.getListUser);
-userRouter.post('/login', userController.login);
-// userRouter.get('/users/:id', userController.getUser);
+userRouter.delete('/users/:userID', userController.deleteUser);
+userRouter.put('/users/:userID', userController.updateUser);
 
 export default userRouter;
