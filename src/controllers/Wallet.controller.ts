@@ -8,7 +8,7 @@ import {WalletRole} from "../models/entity/WalletRole";
 import {User} from "../models/entity/User";
 import WalletRoleController from "./WalletRole.controller";
 
-class walletController {
+class WalletController {
     static userRepository = AppDataSource.getRepository(User);
     static walletRepository = AppDataSource.getRepository(Wallet);
     static currencyRepository = AppDataSource.getRepository(Currency);
@@ -19,8 +19,8 @@ class walletController {
         try {
             const {name, iconID, currencyID, amountOfMoney} = req.body;
             let userID: number = +req.params.userID;
-            let user = await walletController.userRepository.findOneBy({id: userID})
-            let wallet = await walletController.walletRepository.find({
+            let user = await WalletController.userRepository.findOneBy({id: userID})
+            let wallet = await WalletController.walletRepository.find({
                 where: {
                     name: name,
                     walletRoles: {
@@ -30,15 +30,15 @@ class walletController {
                 }
             });
             if (!wallet.length) {
-                let currency = await walletController.currencyRepository.findOneBy({id: +currencyID});
-                let iconWallet = await walletController.iconWalletRepository.findOneBy({id: +iconID});
+                let currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
+                let iconWallet = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
                 if (currency && iconWallet) {
                     let newWallet = new Wallet();
                     newWallet.name = name;
                     newWallet.icon = iconWallet;
                     newWallet.currency = currency;
                     newWallet.amountOfMoney = +amountOfMoney;
-                    let result = await walletController.walletRepository.save(newWallet);
+                    let result = await WalletController.walletRepository.save(newWallet);
                     if (result) {
                         res.status(200).json({
                             message: "Creat wallet success!",
@@ -62,9 +62,9 @@ class walletController {
         try {
             let walletID: number = +req.params.walletID;
             let userID: number = +req.params.userID;
-            let user = await walletController.userRepository.findOneBy({id: userID})
+            let user = await WalletController.userRepository.findOneBy({id: userID})
             if (user) {
-                let wallet = await walletController.walletRepository.find({
+                let wallet = await WalletController.walletRepository.find({
                     relations: {
                         icon: true,
                         currency: true,
@@ -102,9 +102,9 @@ class walletController {
     static async getWalletList(req: CustomRequest, res: Response) {
         try {
             let userID: number = +req.params.userID;
-            let user = await walletController.userRepository.findOneBy({id: userID});
+            let user = await WalletController.userRepository.findOneBy({id: userID});
             if (user) {
-                let walletList = await walletController.walletRepository.find({
+                let walletList = await WalletController.walletRepository.find({
                     relations: {
                         icon: true,
                         currency: true,
@@ -145,7 +145,7 @@ class walletController {
             let userID: number = +req.params.userID;
             let walletRole = await WalletRoleController.getRole(walletID, userID);
             if (walletRole === 'owner') {
-                const updatedWallet = await walletController.walletRepository.find({
+                const updatedWallet = await WalletController.walletRepository.find({
                     relations: {
                         icon: true,
                         currency: true
@@ -158,12 +158,12 @@ class walletController {
                 updatedWallet[0].name = name;
                 updatedWallet[0].amountOfMoney = +amountOfMoney;
                 if (updatedWallet[0].currency.id !== +currencyID) {
-                    updatedWallet[0].currency = await walletController.currencyRepository.findOneBy({id: +currencyID});
+                    updatedWallet[0].currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
                 }
                 if (updatedWallet[0].icon.id !== +iconID) {
-                    updatedWallet[0].icon = await walletController.iconWalletRepository.findOneBy({id: +iconID});
+                    updatedWallet[0].icon = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
                 }
-                let result = await walletController.walletRepository.save(updatedWallet);
+                let result = await WalletController.walletRepository.save(updatedWallet);
                 if (result) {
                     res.status(200).json({
                         message: "Update wallet success!",
@@ -192,9 +192,9 @@ class walletController {
             let userID: number = +req.params.userID;
             let role = await WalletRoleController.getRole(walletID, userID);
             if (role === 'owner') {
-                const resultDeletedWalletRole: number = await WalletRoleController.deleteWalletRoles(walletID);
+                const resultDeletedWalletRole: number = await WalletRoleController.deleteWalletRolesByWalletID(walletID);
                 if (resultDeletedWalletRole) {
-                    const deletedWallet = await walletController.walletRepository.delete({id: walletID});
+                    const deletedWallet = await WalletController.walletRepository.delete({id: walletID});
                     if (deletedWallet.affected) {
                         res.status(200).json({
                             message: "Delete wallet success!",
@@ -213,6 +213,11 @@ class walletController {
         }
     }
 
+    static async deleteWalletByWalletID (walletID: number) {
+        let deletedWallet = await WalletController.walletRepository.delete(walletID);
+        return deletedWallet.affected;
+    }
+
 }
 
-export default walletController;
+export default WalletController;
