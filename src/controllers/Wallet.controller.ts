@@ -6,6 +6,7 @@ import {Currency} from "../models/entity/Currency";
 import {IconWallet} from "../models/entity/IconWallet";
 import {WalletRole} from "../models/entity/WalletRole";
 import {User} from "../models/entity/User";
+import WalletRoleController from "./WalletRole.controller";
 
 class walletController {
     static userRepository = AppDataSource.getRepository(User);
@@ -16,11 +17,21 @@ class walletController {
 
     static async createWallet(req: CustomRequest, res: Response) {
         try {
-            const { name, iconID, currencyID, amountOfMoney } = req.body;
-            let wallet = await walletController.walletRepository.findOneBy({ name });
-            if (!wallet) {
-                let currency = await walletController.currencyRepository.findOneBy({ id: +currencyID });
-                let iconWallet = await walletController.iconWalletRepository.findOneBy({ id: +iconID });
+            const {name, iconID, currencyID, amountOfMoney} = req.body;
+            let userID: number = +req.params.userID;
+            let user = await walletController.userRepository.findOneBy({id: userID})
+            let wallet = await walletController.walletRepository.find({
+                where: {
+                    name: name,
+                    walletRoles: {
+                        user: user,
+                        role: "owner"
+                    }
+                }
+            });
+            if (!wallet.length) {
+                let currency = await walletController.currencyRepository.findOneBy({id: +currencyID});
+                let iconWallet = await walletController.iconWalletRepository.findOneBy({id: +iconID});
                 if (currency && iconWallet) {
                     let newWallet = new Wallet();
                     newWallet.name = name;

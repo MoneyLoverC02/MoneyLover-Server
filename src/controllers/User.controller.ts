@@ -6,6 +6,11 @@ import {SECRET_KEY} from "../middlewares/auth";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+export interface TokenPayload {
+    userID: number;
+    email: string;
+}
+
 class userController {
     static userRepository = AppDataSource.getRepository(User);
 
@@ -48,12 +53,12 @@ class userController {
                         message: "Password not valid!",
                     })
                 }
-                let payload = {
+                let payload: TokenPayload = {
                     userID: user.id,
                     email: user.email
                 }
                 const token = jwt.sign(payload, SECRET_KEY, {
-                    expiresIn: 3600
+                    expiresIn: 36000
                 });
                 res.status(200).json({
                     message: "Login success!",
