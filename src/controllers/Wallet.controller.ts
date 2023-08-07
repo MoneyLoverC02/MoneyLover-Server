@@ -1,4 +1,5 @@
-import {Request, Response} from "express";
+import {Response} from "express";
+import {CustomRequest} from "../middlewares/auth";
 import {AppDataSource} from "../models/data-source";
 import {Wallet} from "../models/entity/Wallet";
 import {Currency} from "../models/entity/Currency";
@@ -14,13 +15,23 @@ class walletController {
     static iconWalletRepository = AppDataSource.getRepository(IconWallet);
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
 
-    static async createWallet(req: Request, res: Response) {
+    static async createWallet(req: CustomRequest, res: Response) {
         try {
-            const { name, iconID, currencyID, amountOfMoney } = req.body;
-            let wallet = await walletController.walletRepository.findOneBy({ name });
-            if (!wallet) {
-                let currency = await walletController.currencyRepository.findOneBy({ id: +currencyID });
-                let iconWallet = await walletController.iconWalletRepository.findOneBy({ id: +iconID });
+            const {name, iconID, currencyID, amountOfMoney} = req.body;
+            let userID: number = +req.params.userID;
+            let user = await walletController.userRepository.findOneBy({id: userID})
+            let wallet = await walletController.walletRepository.find({
+                where: {
+                    name: name,
+                    walletRoles: {
+                        user: user,
+                        role: "owner"
+                    }
+                }
+            });
+            if (!wallet.length) {
+                let currency = await walletController.currencyRepository.findOneBy({id: +currencyID});
+                let iconWallet = await walletController.iconWalletRepository.findOneBy({id: +iconID});
                 if (currency && iconWallet) {
                     let newWallet = new Wallet();
                     newWallet.name = name;
@@ -47,10 +58,10 @@ class walletController {
         }
     }
 
-    static async getWallet(req: Request, res: Response) {
+    static async getWallet(req: CustomRequest, res: Response) {
         try {
-            let walletID = +req.params.walletID;
-            let userID = +req.params.userID;
+            let walletID: number = +req.params.walletID;
+            let userID: number = +req.params.userID;
             let user = await walletController.userRepository.findOneBy({id: userID})
             if (user) {
                 let wallet = await walletController.walletRepository.find({
@@ -88,9 +99,9 @@ class walletController {
         }
     }
 
-    static async getWalletList(req: Request, res: Response) {
+    static async getWalletList(req: CustomRequest, res: Response) {
         try {
-            let userID = +req.params.userID;
+            let userID: number = +req.params.userID;
             let user = await walletController.userRepository.findOneBy({id: userID});
             if (user) {
                 let walletList = await walletController.walletRepository.find({
@@ -128,11 +139,11 @@ class walletController {
         }
     }
 
-    static async updateWallet(req: Request, res: Response) {
+    static async updateWallet(req: CustomRequest, res: Response) {
         try {
-            let walletID = +req.params.walletID;
-            let userID = +req.params.userID;
-            let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
+            let walletID: number = +req.params.walletID;
+            let userID: number = +req.params.userID;
+            let walletRole = await WalletRoleController.getRole(walletID, userID);
             if (walletRole === 'owner') {
                 const updatedWallet = await walletController.walletRepository.find({
                     relations: {
@@ -175,13 +186,13 @@ class walletController {
         }
     }
 
-    static async deleteWallet(req: Request, res: Response) {
+    static async deleteWallet(req: CustomRequest, res: Response) {
         try {
-            let walletID = +req.params.walletID;
-            let userID = +req.params.userID;
-            let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
-            if (walletRole === 'owner') {
-                const resultDeletedWalletRole = await WalletRoleController.deleteWalletRoles(walletID);
+            let walletID: number = +req.params.walletID;
+            let userID: number = +req.params.userID;
+            let role = await WalletRoleController.getRole(walletID, userID);
+            if (role === 'owner') {
+                const resultDeletedWalletRole: number = await WalletRoleController.deleteWalletRoles(walletID);
                 if (resultDeletedWalletRole) {
                     const deletedWallet = await walletController.walletRepository.delete({id: walletID});
                     if (deletedWallet.affected) {
