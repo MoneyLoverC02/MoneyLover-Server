@@ -213,7 +213,7 @@ class WalletController {
         }
     }
 
-    static async deleteWalletByWalletID (walletID: number) {
+    static async deleteWalletByWalletID(walletID: number) {
         let deletedWallet = await WalletController.walletRepository.delete(walletID);
         return deletedWallet.affected;
     }
