@@ -24,17 +24,18 @@ class WalletRoleController {
                 }
             });
             if (walletRole.length) {
-                res.status(401).json({
+                res.json({
                     message: "WalletRole already exist"
                 });
             } else {
                 let newWalletRole = new WalletRole();
                 newWalletRole.user = userID;
                 newWalletRole.wallet = walletID;
-                if (!req.body.role) {
-                    newWalletRole.role = "owner";
-                } else {
+                if (req.body.role) {
                     newWalletRole.role = req.body.role;
+                }
+                if (req.body.archived) {
+                    newWalletRole.archived = req.body.archived;
                 }
                 let result = await WalletRoleController.walletRoleRepository.save(newWalletRole);
                 if (result) {

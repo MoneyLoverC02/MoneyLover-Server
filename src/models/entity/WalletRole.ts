@@ -14,6 +14,9 @@ export class WalletRole {
     @ManyToOne(() => Wallet, wallet => wallet.walletRoles)
     public wallet: Wallet;
 
-    @Column({type: 'varchar'})
+    @Column({default: "owner" , type: 'varchar'})
     public role: string;
+
+    @Column({ default: false, type: 'boolean'})
+    public archived: boolean;
 }
