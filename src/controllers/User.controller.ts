@@ -99,7 +99,7 @@ class UserController {
 
     static async deleteUser(req: CustomRequest, res: Response) {
         try {
-            const userID: number = +req.params.userID;
+            const userID: number = req.token.userID;
             const walletRoleList: WalletRole[] | [] = await WalletRoleController.getWalletRoleListByUserID(userID);
             if (!walletRoleList.length) {
                 await UserController.userRepository.delete(userID);
@@ -142,7 +142,7 @@ class UserController {
         try {
             const {email, password} = req.body;
             const passwordHash = await bcrypt.hash(password, config.bcryptSalt);
-            const updatedUser = await UserController.userRepository.findOneBy({id: +req.params.userID});
+            const updatedUser = await UserController.userRepository.findOneBy({id: req.token.userID});
             updatedUser.email = email;
             updatedUser.password = passwordHash;
             let result = await UserController.userRepository.save(updatedUser);
