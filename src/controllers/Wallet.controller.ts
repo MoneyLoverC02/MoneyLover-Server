@@ -170,7 +170,7 @@ class walletController {
                         updatedWallet: result
                     });
                 } else {
-                    res.status(500).json({
+                    res.json({
                         message: "Update wallet failed!",
                     });
                 }

@@ -25,7 +25,7 @@ class userController {
                 newUser.password = passwordHash;
                 let result = await userController.userRepository.save(newUser);
                 if (result) {
-                    res.status(200).json({
+                    return res.status(200).json({
                         message: "Creat user success!",
                         newUser: result
                     });
@@ -49,7 +49,7 @@ class userController {
             if (user) {
                 const comparePass: boolean = await bcrypt.compare(password, user.password);
                 if (!comparePass) {
-                    res.status(401).json({
+                    return res.json({
                         message: "Password not valid!",
                     })
                 }
@@ -66,7 +66,7 @@ class userController {
                     token: token
                 });
             } else {
-                res.status(401).json({
+                res.json({
                     message: "Email not valid!"
                 });
             }
