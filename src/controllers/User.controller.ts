@@ -109,34 +109,26 @@ class UserController {
                 });
             } else {
                 await WalletRoleController.deleteWalletRolesByUserID(userID);
-                // get the walletIDs that have the role of "owner" and belong to the user to be deleted
+                // get the walletIDs that have the role of "owner" and belong to the user that needs to be deleted
                 let walletIDsHaveOwnerRole: number[] = [];
                 for (const walletRole of walletRoleList) {
                     if (walletRole.role === "owner") {
                         walletIDsHaveOwnerRole.push(walletRole.wallet.id);
                     }
                 }
-                // get the walletIDs that have the role of "owner" and belongs only to the user that needs to be deleted
-                let walletIDsNeedDelete: number[] = [];
-                for (const walletID of walletIDsHaveOwnerRole) {
-                    let result = await WalletRoleController.getWalletRoleListHaveOwnerRoleByWalletID(walletID);
-                    if (!result.length) {
-                        walletIDsNeedDelete.push(walletID);
-                    }
-                }
-                // delete the wallets in wallet_role table belonging to the user that needs to be deleted
-                for (const walletIDNeedDelete of walletIDsNeedDelete) {
+                // delete the wallets in wallet_role table
+                for (const walletIDNeedDelete of walletIDsHaveOwnerRole) {
                     await WalletRoleController.deleteWalletRolesByWalletID(walletIDNeedDelete);
                 }
                 // delete the wallets in wallet table belonging to the user that needs to be deleted
-                for (const walletIDNeedDelete of walletIDsNeedDelete) {
+                for (const walletIDNeedDelete of walletIDsHaveOwnerRole) {
                     await WalletController.deleteWalletByWalletID(walletIDNeedDelete);
                 }
                 // delete the user in user table that needs to be deleted
                 await UserController.userRepository.delete(userID);
                 res.status(200).json({
                     message: "Delete user success!",
-                    numberOfWalletsDeleted: walletIDsNeedDelete.length
+                    numberOfWalletsDeleted: walletIDsHaveOwnerRole.length
                 });
             }
         } catch (e) {
