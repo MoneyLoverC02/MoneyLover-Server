@@ -35,7 +35,7 @@ class UserController {
                     });
                 }
             } else {
-                res.status(200).json({
+                res.json({
                     message: "Email already exist"
                 });
             }

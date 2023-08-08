@@ -218,6 +218,59 @@ class WalletController {
         return deletedWallet.affected;
     }
 
+    static async transferMoneyToAnotherWallet(req: CustomRequest, res: Response) {
+        try {
+            let walletID: number = +req.params.walletID;
+            const {money, walletIDReceived} = req.body;
+            const walletTransfer: Wallet = await WalletController.walletRepository.findOneBy({id: walletID});
+            const walletReceived: Wallet = await WalletController.walletRepository.findOneBy({id: walletIDReceived});
+            if (money <= walletTransfer.amountOfMoney) {
+                walletTransfer.amountOfMoney = walletTransfer.amountOfMoney - money;
+                await WalletController.walletRepository.save(walletTransfer);
+                walletReceived.amountOfMoney = walletReceived.amountOfMoney + money;
+                await WalletController.walletRepository.save(walletReceived);
+                res.status(200).json({
+                    message: "Money transfer success!",
+                    walletTransfer: walletTransfer,
+                    walletReceived: walletReceived
+                });
+            } else {
+                res.json({
+                    message: "Money transfer failed!"
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
+    static async archivedWallet(req: CustomRequest, res: Response) {
+        try {
+            let walletID: number = +req.params.walletID;
+            let userID: number = +req.params.userID;
+            let userRole = await WalletRoleController.getRole(walletID, userID);
+            if (userRole === "owner") {
+                let walletRoleToArchived = await WalletRoleController.getWalletRoleListByWalletID(walletID);
+                for (const walletRoleToArchivedElement of walletRoleToArchived) {
+                    await WalletRoleController.archivedWalletRoleByWalletRoleID(walletRoleToArchivedElement.id);
+                }
+                res.status(200).json({
+                    message: "Archived wallet success!"
+                });
+            } else {
+                res.json({
+                    message: "No permission to archived!",
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
 }
 
 export default WalletController;

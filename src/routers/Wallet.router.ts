@@ -10,5 +10,7 @@ walletRouter.get('/users/:userID/wallets', walletController.getWalletList); // L
 walletRouter.get('/users/:userID/wallets/:walletID', walletController.getWallet); // Lấy info 1 ví của user
 walletRouter.put('/users/:userID/wallets/:walletID', walletController.updateWallet);
 walletRouter.delete('/users/:userID/wallets/:walletID', walletController.deleteWallet);
+walletRouter.post('/users/:userID/wallets/:walletID/transfer', walletController.transferMoneyToAnotherWallet);
+walletRouter.get('/users/:userID/wallets/:walletID/archived', walletController.archivedWallet);
 
 export default walletRouter;

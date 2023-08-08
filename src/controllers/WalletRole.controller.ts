@@ -24,17 +24,18 @@ class WalletRoleController {
                 }
             });
             if (walletRole.length) {
-                res.status(401).json({
+                res.json({
                     message: "WalletRole already exist"
                 });
             } else {
                 let newWalletRole = new WalletRole();
                 newWalletRole.user = userID;
                 newWalletRole.wallet = walletID;
-                if (!req.body.role) {
-                    newWalletRole.role = "owner";
-                } else {
+                if (req.body.role) {
                     newWalletRole.role = req.body.role;
+                }
+                if (req.body.archived) {
+                    newWalletRole.archived = req.body.archived;
                 }
                 let result = await WalletRoleController.walletRoleRepository.save(newWalletRole);
                 if (result) {
@@ -117,6 +118,32 @@ class WalletRoleController {
                 }
             }
         });
+    }
+
+    static async getWalletRoleListByWalletID(walletID: number) {
+        try {
+            return await WalletRoleController.walletRoleRepository.find({
+                where: {
+                    wallet: {
+                        id: walletID
+                    }
+                }
+            });
+        } catch (e) {
+            return e.message;
+        }
+    }
+
+    static async archivedWalletRoleByWalletRoleID(walletRoleID: number) {
+        try {
+            let archivedWalletRole = await WalletRoleController.walletRoleRepository.findOneBy({
+                id: walletRoleID
+            });
+            archivedWalletRole.archived = true;
+            return await WalletRoleController.walletRoleRepository.save(archivedWalletRole);
+        } catch (e) {
+            return e.message;
+        }
     }
 
 }
