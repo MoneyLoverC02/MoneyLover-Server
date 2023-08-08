@@ -12,7 +12,8 @@ class WalletRoleController {
 
     static async createWalletRole(req: CustomRequest, res: Response) {
         try {
-            const {userID, walletID} = req.body;
+            const walletID = req.body.walletID;
+            const userID = req.token.userID;
             let walletRole = await WalletRoleController.walletRoleRepository.find({
                 where: {
                     user: {
@@ -28,9 +29,11 @@ class WalletRoleController {
                     message: "WalletRole already exist"
                 });
             } else {
+                let user = await WalletRoleController.userRoleRepository.findOneBy({id: userID});
+                let wallet = await WalletRoleController.walletRepository.findOneBy({id: walletID});
                 let newWalletRole = new WalletRole();
-                newWalletRole.user = userID;
-                newWalletRole.wallet = walletID;
+                newWalletRole.user = user;
+                newWalletRole.wallet = wallet;
                 if (req.body.role) {
                     newWalletRole.role = req.body.role;
                 }
@@ -139,7 +142,7 @@ class WalletRoleController {
             let archivedWalletRole = await WalletRoleController.walletRoleRepository.findOneBy({
                 id: walletRoleID
             });
-            archivedWalletRole.archived = true;
+            archivedWalletRole.archived = !archivedWalletRole.archived;
             return await WalletRoleController.walletRoleRepository.save(archivedWalletRole);
         } catch (e) {
             return e.message;

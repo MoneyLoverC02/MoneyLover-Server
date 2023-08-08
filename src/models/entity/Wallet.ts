@@ -2,6 +2,7 @@ import {Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne} from "type
 import {Currency} from "./Currency";
 import {WalletRole} from "./WalletRole";
 import {IconWallet} from "./IconWallet";
+import {Transaction} from "./Transaction";
 
 @Entity()
 
@@ -23,5 +24,8 @@ export class Wallet {
 
     @OneToMany(() => WalletRole, walletRoles => walletRoles.wallet)
     walletRoles: WalletRole[];
+
+    @OneToMany(() => Transaction, transaction => transaction.wallet)
+    public transaction: Transaction[];
 
 }
