@@ -51,15 +51,11 @@ class WalletRoleController {
         }
     }
 
-    static async getWalletRoleList(req: CustomRequest, res: Response) {
+    static async getWalletRoleListByUserID(userID: number) {
         try {
-            let userID: number = +req.params.userID;
-            let walletRoleList = await WalletRoleController.walletRoleRepository.find({
+            return await WalletRoleController.walletRoleRepository.find({
                 relations: {
-                    wallet: {
-                        icon: true,
-                        currency: true
-                    }
+                    wallet: {}
                 },
                 where: {
                     user: {
@@ -67,21 +63,8 @@ class WalletRoleController {
                     }
                 }
             });
-            if (walletRoleList.length) {
-                res.status(200).json({
-                    message: "Get walletRoleList success!",
-                    walletRoleList: walletRoleList
-                });
-            } else {
-                res.status(200).json({
-                    message: "No data!",
-                    walletRoleList: walletRoleList
-                });
-            }
         } catch (e) {
-            res.status(500).json({
-                message: e.message
-            });
+            return e.message;
         }
     }
 
@@ -107,13 +90,33 @@ class WalletRoleController {
         }
     }
 
-    static async deleteWalletRoles(walletID: number) {
+    static async deleteWalletRolesByWalletID(walletID: number) {
         let deletedWalletRole = await WalletRoleController.walletRoleRepository.delete({
             wallet: {
                 id: walletID
             }
         });
         return deletedWalletRole.affected;
+    }
+
+    static async deleteWalletRolesByUserID(userID: number) {
+        let deletedWalletRole = await WalletRoleController.walletRoleRepository.delete({
+            user: {
+                id: userID
+            }
+        });
+        return deletedWalletRole.affected;
+    }
+
+    static async getWalletRoleListHaveOwnerRoleByWalletID(walletID: number) {
+        return await WalletRoleController.walletRoleRepository.find({
+            where: {
+                role: "owner",
+                wallet: {
+                    id: walletID
+                }
+            }
+        });
     }
 
 }
