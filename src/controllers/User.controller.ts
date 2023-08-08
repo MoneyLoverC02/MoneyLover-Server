@@ -35,7 +35,7 @@ class UserController {
                     });
                 }
             } else {
-                res.status(200).json({
+                res.json({
                     message: "Email already exist"
                 });
             }
@@ -53,7 +53,7 @@ class UserController {
             if (user) {
                 const comparePass: boolean = await bcrypt.compare(password, user.password);
                 if (!comparePass) {
-                    return res.status(401).json({
+                    return res.json({
                         message: "Password not valid!",
                     })
                 }
@@ -70,7 +70,7 @@ class UserController {
                     token: token
                 });
             } else {
-                res.status(401).json({
+                res.json({
                     message: "Email not valid!"
                 });
             }
