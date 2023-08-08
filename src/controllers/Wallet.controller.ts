@@ -246,6 +246,31 @@ class WalletController {
         }
     }
 
+    static async archivedWallet(req: CustomRequest, res: Response) {
+        try {
+            let walletID: number = +req.params.walletID;
+            let userID: number = +req.params.userID;
+            let userRole = await WalletRoleController.getRole(walletID, userID);
+            if (userRole === "owner") {
+                let walletRoleToArchived = await WalletRoleController.getWalletRoleListByWalletID(walletID);
+                for (const walletRoleToArchivedElement of walletRoleToArchived) {
+                    await WalletRoleController.archivedWalletRoleByWalletRoleID(walletRoleToArchivedElement.id);
+                }
+                res.status(200).json({
+                    message: "Archived wallet success!"
+                });
+            } else {
+                res.json({
+                    message: "No permission to archived!",
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
 }
 
 export default WalletController;

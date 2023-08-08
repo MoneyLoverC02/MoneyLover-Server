@@ -120,6 +120,32 @@ class WalletRoleController {
         });
     }
 
+    static async getWalletRoleListByWalletID(walletID: number) {
+        try {
+            return await WalletRoleController.walletRoleRepository.find({
+                where: {
+                    wallet: {
+                        id: walletID
+                    }
+                }
+            });
+        } catch (e) {
+            return e.message;
+        }
+    }
+
+    static async archivedWalletRoleByWalletRoleID(walletRoleID: number) {
+        try {
+            let archivedWalletRole = await WalletRoleController.walletRoleRepository.findOneBy({
+                id: walletRoleID
+            });
+            archivedWalletRole.archived = true;
+            return await WalletRoleController.walletRoleRepository.save(archivedWalletRole);
+        } catch (e) {
+            return e.message;
+        }
+    }
+
 }
 
 export default WalletRoleController;
