@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, ManyToOne} from "typeorm";
 import {Category} from "./Category";
-import {Wallet} from "./Wallet";
+import {WalletRole} from "./WalletRole";
 
 @Entity()
 
@@ -20,7 +20,7 @@ export class Transaction {
     @Column({type: "varchar"})
     public note: string;
 
-    @ManyToOne(() => Wallet, wallet => wallet.transaction)
-    public wallet: Wallet;
+    @ManyToOne(() => WalletRole, walletRole => walletRole.transaction)
+    public walletRole: WalletRole;
 
 }
