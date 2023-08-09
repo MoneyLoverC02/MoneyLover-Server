@@ -285,6 +285,20 @@ class WalletController {
         }
     }
 
+    static async adjustAmountOfMoneyOfWallet(walletID: number, money: number, typeOfCategory: string) {
+        try {
+            let wallet = await WalletController.walletRepository.findOneBy({id: walletID});
+            if (typeOfCategory === "expense") {
+                wallet.amountOfMoney = wallet.amountOfMoney - money;
+            } else {
+                wallet.amountOfMoney = wallet.amountOfMoney + money;
+            }
+            return await WalletController.walletRepository.save(wallet);
+        } catch (e) {
+            return e.message;
+        }
+    }
+
 }
 
 export default WalletController;

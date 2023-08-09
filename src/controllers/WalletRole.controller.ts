@@ -12,8 +12,8 @@ class WalletRoleController {
 
     static async createWalletRole(req: CustomRequest, res: Response) {
         try {
-            const walletID = req.body.walletID;
-            const userID = req.token.userID;
+            const walletID: number = +req.body.walletID;
+            const userID: number = +req.token.userID;
             let walletRole = await WalletRoleController.walletRoleRepository.find({
                 where: {
                     user: {
