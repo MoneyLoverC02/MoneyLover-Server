@@ -99,7 +99,7 @@ class UserController {
 
     static async deleteUser(req: CustomRequest, res: Response) {
         try {
-            const userID: number = +req.params.userID;
+            const userID: number = req.token.userID;
             const walletRoleList: WalletRole[] | [] = await WalletRoleController.getWalletRoleListByUserID(userID);
             if (!walletRoleList.length) {
                 await UserController.userRepository.delete(userID);
