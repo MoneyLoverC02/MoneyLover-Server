@@ -222,21 +222,60 @@ class WalletController {
         try {
             let walletID: number = +req.params.walletID;
             const {money, walletIDReceived} = req.body;
-            const walletTransfer: Wallet = await WalletController.walletRepository.findOneBy({id: walletID});
-            const walletReceived: Wallet = await WalletController.walletRepository.findOneBy({id: walletIDReceived});
-            if (money <= walletTransfer.amountOfMoney) {
-                walletTransfer.amountOfMoney = walletTransfer.amountOfMoney - money;
+            const walletTransfer: Wallet[] = await WalletController.walletRepository.find({
+                relations: {
+                    currency: true,
+                    icon: true
+                }, where: {
+                    id: walletID
+                }
+            })
+            const walletReceived: Wallet[] = await WalletController.walletRepository.find({
+                relations: {
+                    currency: true,
+                    icon: true
+                }, where: {
+                    id: walletIDReceived
+                }
+            })
+            if (money <= walletTransfer[0].amountOfMoney) {
+                walletTransfer[0].amountOfMoney = walletTransfer[0].amountOfMoney - money;
                 await WalletController.walletRepository.save(walletTransfer);
-                walletReceived.amountOfMoney = walletReceived.amountOfMoney + money;
+                walletReceived[0].amountOfMoney = walletReceived[0].amountOfMoney + money;
                 await WalletController.walletRepository.save(walletReceived);
                 res.status(200).json({
                     message: "Money transfer success!",
-                    walletTransfer: walletTransfer,
-                    walletReceived: walletReceived
+                    walletTransfer: walletTransfer[0],
+                    walletReceived: walletReceived[0]
                 });
             } else {
                 res.json({
                     message: "Money transfer failed!"
+                });
+            }
+        } catch (e) {
+            console.log(124);
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+    static async archivedWallet(req: CustomRequest, res: Response) {
+        try {
+            let walletID: number = +req.params.walletID;
+            let userID: number = +req.params.userID;
+            let userRole = await WalletRoleController.getRole(walletID, userID);
+            if (userRole === "owner") {
+                let walletRoleToArchived = await WalletRoleController.getWalletRoleListByWalletID(walletID);
+                for (const walletRoleToArchivedElement of walletRoleToArchived) {
+                    await WalletRoleController.archivedWalletRoleByWalletRoleID(walletRoleToArchivedElement.id);
+                }
+                res.status(200).json({
+                    message: "Archived wallet success!"
+                });
+            } else {
+                res.json({
+                    message: "No permission to archived!",
                 });
             }
         } catch (e) {
@@ -245,7 +284,6 @@ class WalletController {
             });
         }
     }
-
 }
 
 export default WalletController;
