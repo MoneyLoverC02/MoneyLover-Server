@@ -12,8 +12,8 @@ class WalletRoleController {
 
     static async createWalletRole(req: CustomRequest, res: Response) {
         try {
-            const walletID = req.body.walletID;
-            const userID = req.token.userID;
+            const walletID: number = +req.body.walletID;
+            const userID: number = +req.token.userID;
             let walletRole = await WalletRoleController.walletRoleRepository.find({
                 where: {
                     user: {
@@ -72,7 +72,7 @@ class WalletRoleController {
         }
     }
 
-    static async getRole(walletID: number, userID: number) {
+    static async getWalletRole(walletID: number, userID: number) {
         try {
             let walletRole = await WalletRoleController.walletRoleRepository.find({
                 where: {
@@ -84,11 +84,7 @@ class WalletRoleController {
                     }
                 }
             });
-            if (walletRole.length) {
-                return walletRole[0].role;
-            } else {
-                return "No data";
-            }
+            return walletRole[0];
         } catch (e) {
             return e.message;
         }

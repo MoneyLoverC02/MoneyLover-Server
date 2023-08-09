@@ -4,7 +4,8 @@ import bodyParser from 'body-parser'
 import {AppDataSource} from "./src/models/data-source";
 import authRouter from "./src/routers/auth.router";
 import userRouter from "./src/routers/User.router";
-import walletRouter from "./src/routers/Wallet.router";
+import walletRouter from "./src/routers/Wallet.router"
+import categoryRouter from "./src/routers/Category.router";
 import currencyRouter from "./src/routers/Currency.router";
 import iconWalletRouter from "./src/routers/IconWallet.router";
 import walletRoleRouter from "./src/routers/WalletRole.router";
@@ -25,6 +26,7 @@ app.use(bodyParser.json());
 app.use('/api', authRouter);
 app.use('/api', userRouter);
 app.use('/api', walletRouter);
+app.use('/api', categoryRouter);
 app.use('/api', currencyRouter);
 app.use('/api', iconWalletRouter);
 app.use('/api', walletRoleRouter);
