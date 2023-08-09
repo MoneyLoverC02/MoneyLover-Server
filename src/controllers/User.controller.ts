@@ -50,6 +50,7 @@ class UserController {
         try {
             const {email, password} = req.body;
             const user = await UserController.userRepository.findOneBy({email});
+
             if (user) {
                 const comparePass: boolean = await bcrypt.compare(password, user.password);
                 if (!comparePass) {
@@ -140,17 +141,31 @@ class UserController {
 
     static async updateUser(req: CustomRequest, res: Response) {
         try {
-            const {email, password} = req.body;
-            const passwordHash = await bcrypt.hash(password, config.bcryptSalt);
-            const updatedUser = await UserController.userRepository.findOneBy({id: +req.params.userID});
-            updatedUser.email = email;
-            updatedUser.password = passwordHash;
-            let result = await UserController.userRepository.save(updatedUser);
-            if (result) {
-                res.status(200).json({
-                    message: "Update user success!",
-                    updatedUser: result
-                });
+            const {currentPassword, newPassword, newPasswordConfirmed} = req.body;
+            const userNeedToUpdate = await UserController.userRepository.findOneBy({id: +req.params.userID});
+            if (userNeedToUpdate) {
+                const comparePass: boolean = await bcrypt.compare(currentPassword, userNeedToUpdate.password);
+                if (!comparePass) {
+                    return res.json({
+                        messageErrorCurrentPass: "Invalid! Password must be match current password!",
+                        successCurrentPass: false
+                    })
+                } else if (newPassword !== newPasswordConfirmed) {
+                    return res.json({
+                        messageErrorNewPassword: "Invalid! New confirmed password must be match new password!",
+                        successNewPass: false
+                    })
+                } else {
+                    userNeedToUpdate.password = await bcrypt.hash(newPassword, config.bcryptSalt);
+                    let result = await UserController.userRepository.save(userNeedToUpdate);
+                    if (result) {
+                        res.status(200).json({
+                            messageUpdatePassword: "Update user password success!",
+                            successUpdatePassword: true,
+                            updatedUser: result
+                        });
+                    }
+                }
             }
         } catch (e) {
             res.status(500).json({
@@ -158,7 +173,6 @@ class UserController {
             });
         }
     }
-
 }
 
 export default UserController;
