@@ -3,7 +3,7 @@ import {AppDataSource} from "../models/data-source";
 import {Category} from "../models/entity/Category";
 
 class CategoryController {
-    static async getIconWalletList(req: Request, res: Response) {
+    static async getCategoryList(req: Request, res: Response) {
         try {
             const categoryRepository = AppDataSource.getRepository(Category);
             let categoryList = await categoryRepository.find();

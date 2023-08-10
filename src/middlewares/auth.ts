@@ -12,6 +12,8 @@ export const SECRET_KEY: Secret = config.jwtSecretKey;
 const auth = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const accessToken = req.header('Authorization')?.replace('Bearer ', '');
+        console.log(accessToken);
+        console.log("==================================")
         if (accessToken) {
             jwt.verify(accessToken, SECRET_KEY, (err, decoded: TokenPayload | undefined) => {
                     if (err) {
