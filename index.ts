@@ -10,6 +10,7 @@ import currencyRouter from "./src/routers/Currency.router";
 import iconWalletRouter from "./src/routers/IconWallet.router";
 import walletRoleRouter from "./src/routers/WalletRole.router";
 import transactionRouter from "./src/routers/Transaction.router";
+import auth from "./src/middlewares/auth";
 
 AppDataSource.initialize()
     .then(() => {
@@ -23,6 +24,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
+app.use('/api/users', auth);
 app.use('/api', authRouter);
 app.use('/api', userRouter);
 app.use('/api', walletRouter);
