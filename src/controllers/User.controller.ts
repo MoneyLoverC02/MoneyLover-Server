@@ -142,7 +142,7 @@ class UserController {
         try {
             const userID: number = req.token.userID;
             const {currentPassword, newPassword, newPasswordConfirmed} = req.body;
-            const userNeedToUpdate = await UserController.userRepository.findOneBy({id: userID}); 
+            const userNeedToUpdate = await UserController.userRepository.findOneBy({id: userID});
             if (userNeedToUpdate) {
                 const comparePass: boolean = await bcrypt.compare(currentPassword, userNeedToUpdate.password);
                 if (!comparePass) {

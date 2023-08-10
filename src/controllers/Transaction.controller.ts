@@ -21,7 +21,7 @@ class TransactionController {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
-            if ((walletRole.role === "owner" || walletRole.role === "using") && walletRole.archived == false) {
+            if ((walletRole.role === "owner" || walletRole.role === "using") && !walletRole.archived) {
                 const {amount, date, note, categoryID} = req.body;
                 let category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
                 let newTransaction = new Transaction();
@@ -58,13 +58,14 @@ class TransactionController {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
-            let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
+            let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 let transactionList = await TransactionController.transactionRepository.find({
                     relations: {
                         category: true,
                         walletRole: {
-                            user: true
+                            user: true,
+                            wallet: true
                         }
                     },
                     where: {
@@ -102,11 +103,12 @@ class TransactionController {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
-            let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
+            let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 const transactionID: number = +req.params.transactionID;
                 let transaction = await TransactionController.transactionRepository.find({
                     relations: {
+                        category: true,
                         walletRole: {
                             wallet: true,
                             user: true
@@ -143,7 +145,7 @@ class TransactionController {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
             const transactionID: number = +req.params.transactionID;
-            let transactionDeleted = await TransactionController.transactionRepository.find({
+            let transactionDeleted: Transaction[] = await TransactionController.transactionRepository.find({
                 relations: {
                     category: true,
                     walletRole: {
@@ -154,7 +156,7 @@ class TransactionController {
                     id: transactionID
                 }
             });
-            if (userID === transactionDeleted[0].walletRole.user.id && (transactionDeleted[0].walletRole.role === ("owner" || "using")) && transactionDeleted[0].walletRole.archived == false) {
+            if (userID === transactionDeleted[0].walletRole.user.id && (transactionDeleted[0].walletRole.role === "owner" || transactionDeleted[0].walletRole.role === "using") && transactionDeleted[0].walletRole.archived == false) {
                 let deletedTransaction = await TransactionController.transactionRepository.delete({id: transactionID});
                 if (transactionDeleted[0].category.type === 'expense') {
                     await WalletController.adjustAmountOfMoneyOfWallet(walletID, transactionDeleted[0].amount);
@@ -168,6 +170,77 @@ class TransactionController {
             } else {
                 res.json({
                     message: "No permission to delete!"
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
+    static async updateTransaction(req: CustomRequest, res: Response) {
+        try {
+            let walletID: number = +req.params.walletID;
+            let userID: number = req.token.userID;
+            const transactionID: number = +req.params.transactionID;
+            let updatedTransaction: Transaction[] = await TransactionController.transactionRepository.find({
+                relations: {
+                    category: true,
+                    walletRole: {
+                        user: true,
+                        wallet: true
+                    }
+                },
+                where: {
+                    id: transactionID
+                }
+            });
+            if (userID === updatedTransaction[0].walletRole.user.id && (updatedTransaction[0].walletRole.role === "owner" || updatedTransaction[0].walletRole.role === "using") && updatedTransaction[0].walletRole.archived == false) {
+                let oldAmount: number = updatedTransaction[0].amount;
+                const {amount, date, note, categoryID} = req.body;
+                updatedTransaction[0].amount = +amount;
+                updatedTransaction[0].note = note;
+                updatedTransaction[0].date = date;
+                let newCategory: Category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
+                let oldCategoryType: string = updatedTransaction[0].category.type;
+                let newCategoryType: string = newCategory.type;
+                let caseAdjustAmountOfMoney = 0;
+                if (updatedTransaction[0].category.id !== +categoryID) {
+                    if (oldCategoryType !== newCategoryType) {
+                        if (oldCategoryType === 'expense') caseAdjustAmountOfMoney = 1;
+                        else caseAdjustAmountOfMoney = 2;
+                    } else {
+                        if (oldCategoryType === 'expense') caseAdjustAmountOfMoney = 3;
+                        else caseAdjustAmountOfMoney = 4;
+                    }
+                    updatedTransaction[0].category = newCategory;
+                } else {
+                    if (oldCategoryType === 'expense') caseAdjustAmountOfMoney = 3;
+                    else caseAdjustAmountOfMoney = 4;
+                }
+                switch (caseAdjustAmountOfMoney) {
+                    case 1:
+                        await WalletController.adjustAmountOfMoneyOfWallet(walletID, +amount + oldAmount);
+                        break;
+                    case 2:
+                        await WalletController.adjustAmountOfMoneyOfWallet(walletID, -amount - oldAmount);
+                        break;
+                    case 3:
+                        await WalletController.adjustAmountOfMoneyOfWallet(walletID, -amount + oldAmount);
+                        break;
+                    case 4:
+                        await WalletController.adjustAmountOfMoneyOfWallet(walletID, +amount - oldAmount);
+                        break;
+                }
+                let result = await TransactionController.transactionRepository.save(updatedTransaction);
+                res.status(200).json({
+                    message: "Update transaction success!",
+                    updatedWallet: result[0]
+                });
+            } else {
+                res.json({
+                    message: "No permission to update!"
                 });
             }
         } catch (e) {
