@@ -140,8 +140,9 @@ class UserController {
 
     static async updateUser(req: CustomRequest, res: Response) {
         try {
+            const userID: number = req.token.userID;
             const {currentPassword, newPassword, newPasswordConfirmed} = req.body;
-            const userNeedToUpdate = await UserController.userRepository.findOneBy({id: +req.params.userID});
+            const userNeedToUpdate = await UserController.userRepository.findOneBy({id: userID}); 
             if (userNeedToUpdate) {
                 const comparePass: boolean = await bcrypt.compare(currentPassword, userNeedToUpdate.password);
                 if (!comparePass) {

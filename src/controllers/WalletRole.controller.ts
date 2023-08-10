@@ -75,6 +75,10 @@ class WalletRoleController {
     static async getWalletRole(walletID: number, userID: number) {
         try {
             let walletRole = await WalletRoleController.walletRoleRepository.find({
+                relations: {
+                    user: true,
+                    wallet: true
+                },
                 where: {
                     user: {
                         id: userID
