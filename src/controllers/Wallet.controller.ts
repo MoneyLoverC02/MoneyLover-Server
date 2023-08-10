@@ -148,7 +148,8 @@ class WalletController {
                 const updatedWallet = await WalletController.walletRepository.find({
                     relations: {
                         icon: true,
-                        currency: true
+                        currency: true,
+                        walletRoles: true
                     },
                     where: {
                         id: walletID
@@ -230,7 +231,8 @@ class WalletController {
                     const walletTransfer: Wallet[] = await WalletController.walletRepository.find({
                         relations: {
                             currency: true,
-                            icon: true
+                            icon: true,
+                            walletRoles: true
                         }, where: {
                             id: walletID
                         }
@@ -238,7 +240,8 @@ class WalletController {
                     const walletReceived: Wallet[] = await WalletController.walletRepository.find({
                         relations: {
                             currency: true,
-                            icon: true
+                            icon: true,
+                            walletRoles: true
                         }, where: {
                             id: walletIDReceived
                         }
@@ -255,7 +258,7 @@ class WalletController {
                         });
                     } else {
                         res.json({
-                            message: "Money transfer failed!"
+                            message: "Money not enough!"
                         });
                     }
                 } else {

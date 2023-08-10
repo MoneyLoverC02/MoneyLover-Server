@@ -9,5 +9,6 @@ transactionRouter.post('/users/wallets/:walletID/transactions', TransactionContr
 transactionRouter.get('/users/wallets/:walletID/transactions', TransactionController.getTransactionListByWalletID);
 transactionRouter.get('/users/wallets/:walletID/transactions/:transactionID', TransactionController.getTransaction);
 transactionRouter.delete('/users/wallets/:walletID/transactions/:transactionID', TransactionController.deleteTransaction);
+transactionRouter.put('/users/wallets/:walletID/transactions/:transactionID', TransactionController.updateTransaction);
 
 export default transactionRouter;
