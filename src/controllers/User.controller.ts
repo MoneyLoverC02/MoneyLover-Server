@@ -115,9 +115,12 @@ class UserController {
                         walletRoleIDsWereShare.push(walletRole.id);
                     }
                 }
+                console.log(walletRoleIDsWereShare);
                 // delete transactions of shared wallets of user
-                for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
-                    await TransactionController.deleteTransactionByWalletRoleID(walletRoleIDWereShare);
+                if (walletRoleIDsWereShare.length) {
+                    for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
+                        await TransactionController.deleteTransactionByWalletRoleID(walletRoleIDWereShare);
+                    }
                 }
                 // delete the rest transactions of user
                 await TransactionController.deleteTransactionByUserID(userID);
