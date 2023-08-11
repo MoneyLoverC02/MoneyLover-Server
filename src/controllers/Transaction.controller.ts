@@ -102,8 +102,10 @@ class TransactionController {
     static async getTransaction(req: CustomRequest, res: Response) {
         try {
             const walletID: number = +req.params.walletID;
-            const userID: number = +req.token.userID;
+            const userID: number = req.token.userID;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
+            console.log(walletRole);
+            
             if (walletRole) {
                 const transactionID: number = +req.params.transactionID;
                 let transaction = await TransactionController.transactionRepository.find({
@@ -233,10 +235,11 @@ class TransactionController {
                         await WalletController.adjustAmountOfMoneyOfWallet(walletID, +amount - oldAmount);
                         break;
                 }
+                updatedTransaction[0].walletRole = await WalletRoleController.getWalletRole(walletID, userID);
                 let result = await TransactionController.transactionRepository.save(updatedTransaction);
                 res.status(200).json({
                     message: "Update transaction success!",
-                    updatedWallet: result[0]
+                    updatedTransaction: result[0]
                 });
             } else {
                 res.json({

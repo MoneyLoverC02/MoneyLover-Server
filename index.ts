@@ -4,13 +4,13 @@ import bodyParser from 'body-parser'
 import {AppDataSource} from "./src/models/data-source";
 import authRouter from "./src/routers/auth.router";
 import userRouter from "./src/routers/User.router";
-import walletRouter from "./src/routers/Wallet.router"
+import walletRouter from "./src/routers/Wallet.router";
 import categoryRouter from "./src/routers/Category.router";
 import currencyRouter from "./src/routers/Currency.router";
 import iconWalletRouter from "./src/routers/IconWallet.router";
 import walletRoleRouter from "./src/routers/WalletRole.router";
 import transactionRouter from "./src/routers/Transaction.router";
-import auth from "./src/middlewares/auth";
+import auth from './src/middlewares/auth'
 
 AppDataSource.initialize()
     .then(() => {
