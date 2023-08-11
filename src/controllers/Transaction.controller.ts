@@ -23,14 +23,14 @@ class TransactionController {
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
             if ((walletRole.role === "owner" || walletRole.role === "using") && !walletRole.archived) {
                 const {amount, date, note, categoryID} = req.body;
-                let category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
-                let newTransaction = new Transaction();
+                let category: Category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
+                let newTransaction: Transaction = new Transaction();
                 newTransaction.amount = +amount;
                 newTransaction.note = note;
                 newTransaction.date = date;
                 newTransaction.category = category;
                 newTransaction.walletRole = walletRole;
-                let result = await TransactionController.transactionRepository.save(newTransaction);
+                let result: Transaction = await TransactionController.transactionRepository.save(newTransaction);
                 if (result) {
                     if (category.type === "expense") {
                         await WalletController.adjustAmountOfMoneyOfWallet(walletID, -amount);
@@ -233,10 +233,11 @@ class TransactionController {
                         await WalletController.adjustAmountOfMoneyOfWallet(walletID, +amount - oldAmount);
                         break;
                 }
+                updatedTransaction[0].walletRole = await WalletRoleController.getWalletRole(walletID, userID);
                 let result = await TransactionController.transactionRepository.save(updatedTransaction);
                 res.status(200).json({
                     message: "Update transaction success!",
-                    updatedWallet: result[0]
+                    updatedTransaction: result[0]
                 });
             } else {
                 res.json({
@@ -247,6 +248,81 @@ class TransactionController {
             res.status(500).json({
                 message: e.message
             });
+        }
+    }
+
+    static async deleteTransactionByWalletID(walletID: number) {
+        try {
+            let walletRole: WalletRole[] = await TransactionController.walletRoleRepository.find({
+                where: {
+                    wallet: {
+                        id: walletID
+                    }
+                }
+            })
+            let deletedTransactions = await TransactionController.transactionRepository.delete({
+                walletRole: {
+                    id: walletRole[0].id
+                }
+            });
+            return deletedTransactions.affected;
+        } catch (e) {
+            return e.message;
+        }
+    }
+
+    static async deleteTransactionByUserID(userID: number) {
+        try {
+            let walletRole: WalletRole[] = await TransactionController.walletRoleRepository.find({
+                where: {
+                    user: {
+                        id: userID
+                    }
+                }
+            });
+            let deletedTransactions = await TransactionController.transactionRepository.delete({
+                walletRole: {
+                    id: walletRole[0].id
+                }
+            });
+            return deletedTransactions.affected;
+        } catch (e) {
+            return e.message;
+        }
+    }
+
+    static async deleteTransactionByWalletRoleID(walletRoleID: number) {
+        try {
+            let transactionDeleted: Transaction[] = await TransactionController.transactionRepository.find({
+                relations: {
+                    category: true,
+                    walletRole: {
+                        wallet: true
+                    }
+                },
+                where: {
+                    walletRole: {
+                        id: walletRoleID
+                    }
+                }
+            });
+            let deletedTransactions = await TransactionController.transactionRepository.delete({
+                walletRole: {
+                    id: walletRoleID
+                }
+            });
+            if (transactionDeleted[0]) {
+                let walletIDNeedAdjustAmountOfMoney: number = transactionDeleted[0].walletRole.wallet.id;
+                let changeAmount: number = transactionDeleted[0].amount;
+                if (transactionDeleted[0].category.type === 'expense') {
+                    await WalletController.adjustAmountOfMoneyOfWallet(walletIDNeedAdjustAmountOfMoney, changeAmount);
+                } else {
+                    await WalletController.adjustAmountOfMoneyOfWallet(walletIDNeedAdjustAmountOfMoney, -changeAmount);
+                }
+            }
+            return deletedTransactions.affected;
+        } catch (e) {
+            return e.message;
         }
     }
 
