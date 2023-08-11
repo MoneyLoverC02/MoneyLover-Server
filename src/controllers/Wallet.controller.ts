@@ -7,6 +7,7 @@ import {IconWallet} from "../models/entity/IconWallet";
 import {WalletRole} from "../models/entity/WalletRole";
 import {User} from "../models/entity/User";
 import WalletRoleController from "./WalletRole.controller";
+import TransactionController from "./Transaction.controller";
 
 class WalletController {
     static userRepository = AppDataSource.getRepository(User);
@@ -193,14 +194,13 @@ class WalletController {
             let userID: number = req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole.role === 'owner') {
-                const resultDeletedWalletRole: number = await WalletRoleController.deleteWalletRolesByWalletID(walletID);
-                if (resultDeletedWalletRole) {
-                    const deletedWallet = await WalletController.walletRepository.delete({id: walletID});
-                    if (deletedWallet.affected) {
-                        res.status(200).json({
-                            message: "Delete wallet success!",
-                        });
-                    }
+                await TransactionController.deleteTransactionByWalletID(walletID);
+                await WalletRoleController.deleteWalletRolesByWalletID(walletID);
+                const deletedWallet = await WalletController.walletRepository.delete({id: walletID});
+                if (deletedWallet.affected) {
+                    res.status(200).json({
+                        message: "Delete wallet success!",
+                    });
                 }
             } else {
                 res.status(500).json({

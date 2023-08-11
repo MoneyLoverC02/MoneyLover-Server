@@ -9,6 +9,7 @@ import {SECRET_KEY} from "../middlewares/auth";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import {WalletRole} from "../models/entity/WalletRole";
+import TransactionController from "./Transaction.controller";
 
 export interface TokenPayload {
     userID: number;
@@ -108,7 +109,18 @@ class UserController {
                     numberOfWalletsDeleted: 0
                 });
             } else {
-                await WalletRoleController.deleteWalletRolesByUserID(userID);
+                let walletRoleIDsWereShare: number[] = [];
+                for (const walletRole of walletRoleList) {
+                    if (walletRole.role !== "owner") {
+                        walletRoleIDsWereShare.push(walletRole.id);
+                    }
+                }
+                // delete transactions of shared wallets of user
+                for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
+                    await TransactionController.deleteTransactionByWalletRoleID(walletRoleIDWereShare);
+                }
+                // delete the rest transactions of user
+                await TransactionController.deleteTransactionByUserID(userID);
                 // get the walletIDs that have the role of "owner" and belong to the user that needs to be deleted
                 let walletIDsHaveOwnerRole: number[] = [];
                 for (const walletRole of walletRoleList) {
@@ -116,6 +128,7 @@ class UserController {
                         walletIDsHaveOwnerRole.push(walletRole.wallet.id);
                     }
                 }
+                await WalletRoleController.deleteWalletRolesByUserID(userID);
                 // delete the wallets in wallet_role table
                 for (const walletIDNeedDelete of walletIDsHaveOwnerRole) {
                     await WalletRoleController.deleteWalletRolesByWalletID(walletIDNeedDelete);
