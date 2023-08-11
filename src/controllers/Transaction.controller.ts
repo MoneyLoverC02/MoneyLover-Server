@@ -280,12 +280,18 @@ class TransactionController {
                     }
                 }
             });
-            let deletedTransactions = await TransactionController.transactionRepository.delete({
-                walletRole: {
-                    id: walletRole[0].id
-                }
-            });
-            return deletedTransactions.affected;
+            let walletRoleIDs: number[] = [];
+            for (const element of walletRole) {
+                walletRoleIDs.push(element.id);
+            }
+            for (const walletRoleID of walletRoleIDs) {
+                await TransactionController.transactionRepository.delete({
+                    walletRole: {
+                        id: walletRoleID
+                    }
+                });
+            }
+            return "Delete success";
         } catch (e) {
             return e.message;
         }
