@@ -9,4 +9,6 @@ transactionRouter.get('/users/wallets/:walletID/transactions/:transactionID', Tr
 transactionRouter.delete('/users/wallets/:walletID/transactions/:transactionID', TransactionController.deleteTransaction);
 transactionRouter.put('/users/wallets/:walletID/transactions/:transactionID', TransactionController.updateTransaction);
 
+transactionRouter.get('/users/wallets/:walletID/report', TransactionController.getAllTransactionByTimeRange);
+
 export default transactionRouter;

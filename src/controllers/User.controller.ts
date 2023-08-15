@@ -10,6 +10,29 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import {WalletRole} from "../models/entity/WalletRole";
 import TransactionController from "./Transaction.controller";
+import nodemailer from 'nodemailer'
+import {OAuth2Client} from 'google-auth-library'
+
+const crypto = require('crypto');
+
+
+const GOOGLE_MAILER_CLIENT_ID =
+    '420362997504-21gqqs491gttfqp41skjbfe2776dq15t.apps.googleusercontent.com';
+const GOOGLE_MAILER_CLIENT_SECRET = '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';
+const GOOGLE_MAILER_REFRESH_TOKEN =
+    '1//04k5BLOr8_REdCgYIARAAGAQSNwF-L9Irg28V3sQhJPXgiDU3i51Bdymwdh7oTU5xWOhRf4aNWHZVD4mMg1Uaf5W1KPEyMOU1VkI';
+const ADMIN_EMAIL_ADDRESS = 'tnhieutn@gmail.com';
+
+// Khởi tạo OAuth2Client với Client ID và Client Secret
+const myOAuth2Client = new OAuth2Client(
+    GOOGLE_MAILER_CLIENT_ID,
+    GOOGLE_MAILER_CLIENT_SECRET
+);
+// Set Refresh Token vào OAuth2Client Credentials
+myOAuth2Client.setCredentials({
+    refresh_token: GOOGLE_MAILER_REFRESH_TOKEN
+});
+
 
 export interface TokenPayload {
     userID: number;
@@ -24,16 +47,21 @@ class UserController {
             const {email, password} = req.body;
             let user = await UserController.userRepository.findOneBy({email});
             if (!user) {
+                let verifyEmailToken = crypto.randomBytes(20).toString('hex')
                 const passwordHash = await bcrypt.hash(password, config.bcryptSalt);
                 let newUser = new User();
                 newUser.email = email;
                 newUser.password = passwordHash;
+                newUser.verifyEmailToken = verifyEmailToken;
                 let result = await UserController.userRepository.save(newUser);
                 if (result) {
-                    res.status(200).json({
-                        message: "Creat user success!",
-                        newUser: result
-                    });
+                    let content = `<h3>Please <a href="http://localhost:3000/verify/${verifyEmailToken}">click here</a> to verify your email</h3>`
+                    await UserController.sendEmail(email, content).then(()=>{
+                        res.status(200).json({
+                            message: "Creat user success. Please check your email register for verify!",
+                            newUser: result
+                        });
+                    })
                 }
             } else {
                 res.json({
@@ -52,24 +80,31 @@ class UserController {
             const {email, password} = req.body;
             const user = await UserController.userRepository.findOneBy({email});
             if (user) {
-                const comparePass: boolean = await bcrypt.compare(password, user.password);
-                if (!comparePass) {
-                    return res.json({
-                        message: "Password not valid!",
+                const checkVerify = user.verifyEmail;
+                if (checkVerify) {
+                    const comparePass: boolean = await bcrypt.compare(password, user.password);
+                    if (!comparePass) {
+                        return res.json({
+                            message: "Password not valid!",
+                        })
+                    }
+                    let payload: TokenPayload = {
+                        userID: user.id,
+                        email: user.email
+                    }
+                    const token = jwt.sign(payload, SECRET_KEY, {
+                        expiresIn: 36000
+                    });
+                    res.status(200).json({
+                        message: "Login success!",
+                        user: user,
+                        token: token
+                    });
+                } else {
+                    res.json({
+                        message: "Email is not verify!"
                     })
                 }
-                let payload: TokenPayload = {
-                    userID: user.id,
-                    email: user.email
-                }
-                const token = jwt.sign(payload, SECRET_KEY, {
-                    expiresIn: 36000
-                });
-                res.status(200).json({
-                    message: "Login success!",
-                    user: user,
-                    token: token
-                });
             } else {
                 res.json({
                     message: "Email not valid!"
@@ -115,7 +150,6 @@ class UserController {
                         walletRoleIDsWereShare.push(walletRole.id);
                     }
                 }
-                console.log(walletRoleIDsWereShare);
                 // delete transactions of shared wallets of user
                 if (walletRoleIDsWereShare.length) {
                     for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
@@ -190,6 +224,60 @@ class UserController {
         }
     }
 
+    static async sendEmail(email, content) {
+        try {
+            if (!email || !content) throw new Error('Please provide email and content!')
+            const myAccessTokenObject = await myOAuth2Client.getAccessToken()
+            const myAccessToken = myAccessTokenObject?.token
+            const transport = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    type: 'OAuth2',
+                    user: ADMIN_EMAIL_ADDRESS,
+                    clientId: GOOGLE_MAILER_CLIENT_ID,
+                    clientSecret: GOOGLE_MAILER_CLIENT_SECRET,
+                    refresh_token: GOOGLE_MAILER_REFRESH_TOKEN,
+                    accessToken: myAccessToken
+                }
+            })
+            const mailOptions = {
+                to: email,
+                subject: "Confirmed Email Register",
+                html: `${content}`
+            }
+            await transport.sendMail(mailOptions)
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
+
+    static async verifyEmail(req: CustomRequest, res: Response) {
+        try {
+            let user = await UserController.userRepository.findOneBy({verifyEmailToken: req.params.token});
+            if (!user) {
+                res.json({
+                    message: `Email ${user.email} was not existed!`
+                })
+            } else {
+                user.verifyEmail = true;
+                let result = await UserController.userRepository.save(user);
+                if (result) {
+                    res.status(200).json({
+                        message: "Verify register successfully!",
+                        newUser: user
+                    })
+                } else {
+                    res.json({
+                        message: "Error saving user"
+                    });
+                }
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
 }
 
 export default UserController;

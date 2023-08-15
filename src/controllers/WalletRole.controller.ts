@@ -122,7 +122,6 @@ class WalletRoleController {
             }
         });
     }
-
     static async getWalletRoleListByWalletID(walletID: number) {
         try {
             return await WalletRoleController.walletRoleRepository.find({
@@ -136,7 +135,6 @@ class WalletRoleController {
             return e.message;
         }
     }
-
     static async archivedWalletRoleByWalletRoleID(walletRoleID: number) {
         try {
             let archivedWalletRole = await WalletRoleController.walletRoleRepository.findOneBy({
@@ -148,7 +146,6 @@ class WalletRoleController {
             return e.message;
         }
     }
-
 }
 
 export default WalletRoleController;
