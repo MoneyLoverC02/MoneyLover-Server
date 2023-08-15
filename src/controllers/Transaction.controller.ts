@@ -8,6 +8,7 @@ import {User} from "../models/entity/User";
 import {Transaction} from "../models/entity/Transaction";
 import WalletRoleController from "./WalletRole.controller";
 import WalletController from "./Wallet.controller";
+import {Between, LessThan} from "typeorm";
 
 class TransactionController {
     static userRepository = AppDataSource.getRepository(User);
@@ -331,7 +332,72 @@ class TransactionController {
             return e.message;
         }
     }
+    static async getAllTransactionByTimeRange(req: CustomRequest, res: Response) {
+        try {
+            const walletID: number = +req.params.walletID;
+            const userID: number = +req.token.userID;
+            const { startDate, endDate } = req.query;
+            let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
+            if (walletRole) {
+                let transactionListIntime = await TransactionController.transactionRepository.find({
+                    relations: {
+                        category: true,
+                        walletRole: {
+                            user: true,
+                            wallet: true
+                        }
+                    },
+                    where: {
+                        walletRole: {
+                            wallet: {
+                                id: walletID
+                            }
+                        },
+                        date: Between(
+                            new Date(parseDate(startDate)),
+                            new Date(parseDate(endDate))
+                        )
+                    }
+                });
+                let transactionListBefore = await TransactionController.transactionRepository.find({
+                    relations: {
+                        category: true,
+                        walletRole: {
+                            user: true,
+                            wallet: true
+                        }
+                    },
+                    where: {
+                        walletRole: {
+                            wallet: {
+                                id: walletID
+                            }
+                        },
+                        date: LessThan(
+                            new Date(parseDate(startDate))
+                        )
+                    }
+                });
+                res.status(200).json({
+                    message: "Get transaction list success!",
+                    transactionList: transactionListIntime,
+                    transactionListBefore
+                });
+            } else {
+                res.status(200).json({
+                    message: "No permission to get transaction list!"
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
 
 }
-
+function parseDate(input) {
+    var parts = input.split('-');
+    return new Date(parts[0], parts[1] - 1, parts[2]); // Tháng từ 0-11
+}
 export default TransactionController;
