@@ -332,7 +332,6 @@ class TransactionController {
             return e.message;
         }
     }
-
     static async getAllTransactionByTimeRange(req: CustomRequest, res: Response) {
         try {
             const walletID: number = +req.params.walletID;
@@ -396,11 +395,108 @@ class TransactionController {
         }
     }
 
-}
+    static async searchAllTransactionByTimeRangeAndCategory(req: CustomRequest, res: Response) {
+        try {
+            const walletID: number = +req.params.walletID;
+            const userID: number = +req.token.userID;
+            console.log(req.query.categoryID);
+            const { startDate, endDate } = req.query;
+            let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
+            if (walletRole) {
+                if (req.query.categoryID) {
+                    let categoryID = +req.query.categoryID;
+                    let transactionListIntime = await TransactionController.transactionRepository.find({
+                        relations: {
+                            category: true,
+                            walletRole: {
+                                user: true,
+                                wallet: true
+                            }
+                        },
+                        where: {
+                            walletRole: {
+                                wallet: {
+                                    id: walletID
+                                }
+                            },
+                            date: Between(
+                                new Date(parseDate(startDate)),
+                                new Date(parseDate(endDate))
+                            ), category: {
+                                id: +categoryID
+                            }
+                        }
+                    });
+                    res.status(200).json({
+                        message: "Get transaction list success!",
+                        transactionList: transactionListIntime,
+                    });
+                } else {
+                    let transactionListIntime = await TransactionController.transactionRepository.find({
+                        relations: {
+                            category: true,
+                            walletRole: {
+                                user: true,
+                                wallet: true
+                            }
+                        },
+                        where: {
+                            walletRole: {
+                                wallet: {
+                                    id: walletID
+                                }
+                            },
+                            date: Between(
+                                new Date(parseDate(startDate)),
+                                new Date(parseDate(endDate))
+                            )
+                        }
+                    });
+                    res.status(200).json({
+                        message: "Get transaction list success!",
+                        transactionList: transactionListIntime,
+                    });
+                }
+            } else {
+                res.status(200).json({
+                    message: "No permission to get transaction list!"
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
 
+}
 function parseDate(input) {
     var parts = input.split('-');
     return new Date(parts[0], parts[1] - 1, parts[2]); // Tháng từ 0-11
 }
-
 export default TransactionController;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
