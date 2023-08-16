@@ -63,6 +63,11 @@ class WalletController {
         try {
             let walletID: number = +req.params.walletID;
             let userID: number = req.token.userID;
+            type userOfTheWalletData = {
+                email: string,
+                role: string
+            }
+            let allUsersOfTheWallet: userOfTheWalletData[] | undefined = await WalletRoleController.getAllUsersOfTheWallet(walletID);
             let user = await WalletController.userRepository.findOneBy({id: userID})
             if (user) {
                 let wallet = await WalletController.walletRepository.find({
@@ -81,7 +86,8 @@ class WalletController {
                 if (wallet.length) {
                     res.status(200).json({
                         message: "Get wallet success!",
-                        wallet: wallet[0]
+                        wallet: wallet[0],
+                        allUsersOfTheWallet: allUsersOfTheWallet
                     });
                 } else {
                     res.status(200).json({

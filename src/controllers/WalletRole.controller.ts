@@ -149,6 +149,34 @@ class WalletRoleController {
         }
     }
 
+    static async getAllUsersOfTheWallet(walletID: number) {
+        try {
+            let WalletRoleList: WalletRole[] = await WalletRoleController.walletRoleRepository.find({
+                relations: {
+                    user: true
+                },
+                where: {
+                    wallet: {
+                        id: walletID
+                    }
+                }
+            });
+            type userOfTheWalletData = {
+                email: string,
+                role: string
+            }
+            let allUsersOfTheWallet: userOfTheWalletData[] = [];
+            for (const walletRole of WalletRoleList) {
+                allUsersOfTheWallet.push({email: walletRole.user.email, role: walletRole.role});
+            }
+            if (WalletRoleList.length) {
+                return allUsersOfTheWallet;
+            }
+        } catch (e) {
+            return e.message;
+        }
+    }
+
 }
 
 export default WalletRoleController;
