@@ -254,19 +254,21 @@ class TransactionController {
 
     static async deleteTransactionByWalletID(walletID: number) {
         try {
-            let walletRole: WalletRole[] = await TransactionController.walletRoleRepository.find({
+            let walletRoles: WalletRole[] = await TransactionController.walletRoleRepository.find({
                 where: {
                     wallet: {
                         id: walletID
                     }
                 }
-            })
-            let deletedTransactions = await TransactionController.transactionRepository.delete({
-                walletRole: {
-                    id: walletRole[0].id
-                }
             });
-            return deletedTransactions.affected;
+            for (const walletRole of walletRoles) {
+                await TransactionController.transactionRepository.delete({
+                    walletRole: {
+                        id: walletRole.id
+                    }
+                });
+            }
+            return "Delete success";
         } catch (e) {
             return e.message;
         }
@@ -274,21 +276,17 @@ class TransactionController {
 
     static async deleteTransactionByUserID(userID: number) {
         try {
-            let walletRole: WalletRole[] = await TransactionController.walletRoleRepository.find({
+            let walletRoles: WalletRole[] = await TransactionController.walletRoleRepository.find({
                 where: {
                     user: {
                         id: userID
                     }
                 }
             });
-            let walletRoleIDs: number[] = [];
-            for (const element of walletRole) {
-                walletRoleIDs.push(element.id);
-            }
-            for (const walletRoleID of walletRoleIDs) {
+            for (const walletRole of walletRoles) {
                 await TransactionController.transactionRepository.delete({
                     walletRole: {
-                        id: walletRoleID
+                        id: walletRole.id
                     }
                 });
             }
