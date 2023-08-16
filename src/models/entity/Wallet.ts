@@ -23,4 +23,5 @@ export class Wallet {
 
     @OneToMany(() => WalletRole, walletRoles => walletRoles.wallet)
     walletRoles: WalletRole[];
+
 }
