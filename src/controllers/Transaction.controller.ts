@@ -399,7 +399,7 @@ class TransactionController {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
             console.log(req.query.categoryID);
-            const {startDate, endDate,startMoney, endMoney} = req.query;
+            const {startDate, endDate, startMoney, endMoney} = req.query;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 if (req.query.categoryID) {
@@ -424,7 +424,7 @@ class TransactionController {
                             ), category: {
                                 id: +categoryID
                             },
-                            amount:Between(
+                            amount: Between(
                                 +startMoney,
                                 +endMoney
                             )
@@ -453,7 +453,7 @@ class TransactionController {
                                 new Date(parseDate(startDate)),
                                 new Date(parseDate(endDate))
                             ),
-                            amount:Between(
+                            amount: Between(
                                 +startMoney,
                                 +endMoney
                             )
@@ -477,19 +477,14 @@ class TransactionController {
     }
 
 
+}
 
-    }
+function parseDate(input) {
+    let parts = input.split('-');
+    return new Date(parts[0], parts[1] - 1, parts[2]); // Tháng từ 0-11
+}
 
-    function
-
-    parseDate(input) {
-        var parts = input.split('-');
-        return new Date(parts[0], parts[1] - 1, parts[2]); // Tháng từ 0-11
-    }
-
-    export
-    default
-    TransactionController;
+export default TransactionController;
 
 
 

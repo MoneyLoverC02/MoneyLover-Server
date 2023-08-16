@@ -151,7 +151,7 @@ class WalletController {
             let walletID: number = +req.params.walletID;
             let userID: number = req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
-            if (walletRole.role === 'owner' && walletRole.archived == false) {
+            if (walletRole.role !== 'viewer' && walletRole.archived == false) {
                 const updatedWallet = await WalletController.walletRepository.find({
                     relations: {
                         icon: true,
@@ -290,7 +290,7 @@ class WalletController {
             let walletID: number = +req.params.walletID;
             let userID: number = req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
-            if (walletRole.role === "owner") {
+            if (walletRole.role !== "viewer") {
                 let walletRoleToArchived = await WalletRoleController.getWalletRoleListByWalletID(walletID);
                 for (const walletRoleToArchivedElement of walletRoleToArchived) {
                     await WalletRoleController.archivedWalletRoleByWalletRoleID(walletRoleToArchivedElement.id);
