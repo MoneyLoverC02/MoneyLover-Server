@@ -94,7 +94,7 @@ class UserController {
                         email: user.email
                     }
                     const token = jwt.sign(payload, SECRET_KEY, {
-                        expiresIn: 36000
+                        expiresIn: '365d'
                     });
                     res.status(200).json({
                         message: "Login success!",
