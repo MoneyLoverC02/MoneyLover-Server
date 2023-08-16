@@ -292,7 +292,6 @@ class UserController {
     static async resetPassword (req: CustomRequest, res: Response){
         try {
             let {email} = req.body
-            console.log(req.body)
             let user = await UserController.userRepository.findOneBy({email})
             if(user){
                 let newPassword = crypto.randomBytes(4).toString('hex')
