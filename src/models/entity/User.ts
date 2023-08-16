@@ -13,10 +13,12 @@ export class User {
     @Column({type: 'varchar'})
     public password: string;
 
-    @Column({ default: false, type: 'boolean'})
-    public authEmail: boolean;
+    @Column({default: '', type: 'varchar'})
+    public verifyEmailToken: string;
+
+    @Column({default: false, type: 'boolean'})
+    public verifyEmail: boolean;
 
     @OneToMany(() => WalletRole, walletRoles => walletRoles.user)
     walletRoles: WalletRole[];
-
 }

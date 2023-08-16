@@ -178,7 +178,7 @@ class WalletController {
                         updatedWallet: result
                     });
                 } else {
-                    res.status(500).json({
+                    res.json({
                         message: "Update wallet failed!",
                     });
                 }
@@ -229,7 +229,7 @@ class WalletController {
         try {
             let walletID: number = +req.params.walletID;
             let userID: number = +req.token.userID
-            let walletRoleTransfer = await WalletRoleController.getWalletRole(walletID, userID);
+            let walletRoleTransfer = await WalletRoleController.getWalletRole(walletID, userID);  
             if (walletRoleTransfer.role === "owner" && walletRoleTransfer.archived == false) {
                 const {money, walletIDReceived} = req.body;
                 let walletRoleReceived = await WalletRoleController.getWalletRole(walletIDReceived, userID);
@@ -278,6 +278,7 @@ class WalletController {
                 });
             }
         } catch (e) {
+            console.log(124);
             res.status(500).json({
                 message: e.message
             });
