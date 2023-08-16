@@ -1,14 +1,14 @@
-import {Response} from "express";
-import {CustomRequest} from "../middlewares/auth";
-import {AppDataSource} from "../models/data-source";
-import {Wallet} from "../models/entity/Wallet";
-import {Category} from "../models/entity/Category";
-import {WalletRole} from "../models/entity/WalletRole";
-import {User} from "../models/entity/User";
-import {Transaction} from "../models/entity/Transaction";
+import { Response } from "express";
+import { CustomRequest } from "../middlewares/auth";
+import { AppDataSource } from "../models/data-source";
+import { Wallet } from "../models/entity/Wallet";
+import { Category } from "../models/entity/Category";
+import { WalletRole } from "../models/entity/WalletRole";
+import { User } from "../models/entity/User";
+import { Transaction } from "../models/entity/Transaction";
 import WalletRoleController from "./WalletRole.controller";
 import WalletController from "./Wallet.controller";
-import {Between, LessThan, LessThanOrEqual} from "typeorm";
+import { Between, LessThan, LessThanOrEqual } from "typeorm";
 
 class TransactionController {
     static userRepository = AppDataSource.getRepository(User);
@@ -23,8 +23,8 @@ class TransactionController {
             const userID: number = +req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
             if ((walletRole.role === "owner" || walletRole.role === "using") && !walletRole.archived) {
-                const {amount, date, note, categoryID} = req.body;
-                let category: Category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
+                const { amount, date, note, categoryID } = req.body;
+                let category: Category = await TransactionController.categoryRoleRepository.findOneBy({ id: +categoryID });
                 let newTransaction: Transaction = new Transaction();
                 newTransaction.amount = +amount;
                 newTransaction.note = note;
@@ -158,7 +158,7 @@ class TransactionController {
                 }
             });
             if (userID === transactionDeleted[0].walletRole.user.id && (transactionDeleted[0].walletRole.role === "owner" || transactionDeleted[0].walletRole.role === "using") && transactionDeleted[0].walletRole.archived == false) {
-                let deletedTransaction = await TransactionController.transactionRepository.delete({id: transactionID});
+                let deletedTransaction = await TransactionController.transactionRepository.delete({ id: transactionID });
                 if (transactionDeleted[0].category.type === 'expense') {
                     await WalletController.adjustAmountOfMoneyOfWallet(walletID, transactionDeleted[0].amount);
                 } else {
@@ -199,11 +199,11 @@ class TransactionController {
             });
             if (userID === updatedTransaction[0].walletRole.user.id && (updatedTransaction[0].walletRole.role === "owner" || updatedTransaction[0].walletRole.role === "using") && updatedTransaction[0].walletRole.archived == false) {
                 let oldAmount: number = updatedTransaction[0].amount;
-                const {amount, date, note, categoryID} = req.body;
+                const { amount, date, note, categoryID } = req.body;
                 updatedTransaction[0].amount = +amount;
                 updatedTransaction[0].note = note;
                 updatedTransaction[0].date = date;
-                let newCategory: Category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
+                let newCategory: Category = await TransactionController.categoryRoleRepository.findOneBy({ id: +categoryID });
                 let oldCategoryType: string = updatedTransaction[0].category.type;
                 let newCategoryType: string = newCategory.type;
                 let caseAdjustAmountOfMoney = 0;
@@ -335,7 +335,7 @@ class TransactionController {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
-            const {startDate, endDate} = req.query;
+            const { startDate, endDate } = req.query;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 let transactionListIntime = await TransactionController.transactionRepository.find({
@@ -355,7 +355,7 @@ class TransactionController {
                         date: Between(
                             new Date(parseDate(startDate)),
                             new Date(parseDate(endDate))
-                        ), 
+                        ),
                     }
                 });
                 let transactionListBefore = await TransactionController.transactionRepository.find({
@@ -399,7 +399,7 @@ class TransactionController {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
             console.log(req.query.categoryID);
-            const {startDate, endDate,startMoney, endMoney} = req.query;
+            const { startDate, endDate, startMoney, endMoney } = req.query;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 if (req.query.categoryID) {
@@ -424,7 +424,7 @@ class TransactionController {
                             ), category: {
                                 id: +categoryID
                             },
-                            amount:Between(
+                            amount: Between(
                                 +startMoney,
                                 +endMoney
                             )
@@ -453,7 +453,7 @@ class TransactionController {
                                 new Date(parseDate(startDate)),
                                 new Date(parseDate(endDate))
                             ),
-                            amount:Between(
+                            amount: Between(
                                 +startMoney,
                                 +endMoney
                             )
@@ -476,20 +476,14 @@ class TransactionController {
         }
     }
 
+}
 
+function parseDate(input) {
+    let parts = input.split('-');
+    return new Date(parts[0], parts[1] - 1, parts[2]); // Tháng từ 0-11
+}
 
-    }
-
-    function
-
-    parseDate(input) {
-        var parts = input.split('-');
-        return new Date(parts[0], parts[1] - 1, parts[2]); // Tháng từ 0-11
-    }
-
-    export
-    default
-    TransactionController;
+export default TransactionController;
 
 
 
