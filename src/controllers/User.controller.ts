@@ -15,7 +15,6 @@ import {OAuth2Client} from 'google-auth-library'
 
 const crypto = require('crypto');
 
-
 const GOOGLE_MAILER_CLIENT_ID =
     '420362997504-21gqqs491gttfqp41skjbfe2776dq15t.apps.googleusercontent.com';
 const GOOGLE_MAILER_CLIENT_SECRET = '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';

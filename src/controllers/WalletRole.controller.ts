@@ -4,6 +4,7 @@ import {AppDataSource} from "../models/data-source";
 import {WalletRole} from "../models/entity/WalletRole";
 import {Wallet} from "../models/entity/Wallet";
 import {User} from "../models/entity/User";
+import {Not} from "typeorm";
 
 class WalletRoleController {
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
@@ -156,6 +157,7 @@ class WalletRoleController {
                     user: true
                 },
                 where: {
+                    role: Not("leaved"),
                     wallet: {
                         id: walletID
                     }
@@ -174,6 +176,22 @@ class WalletRoleController {
             }
         } catch (e) {
             return e.message;
+        }
+    }
+
+    static async leaveSharedWallet(req: CustomRequest, res: Response) {
+        try {
+            const walletRoleID: number = +req.params.walletRoleID;
+            let updateWalletRole: WalletRole = await WalletRoleController.walletRoleRepository.findOneBy({id: walletRoleID});
+            updateWalletRole.role = "leaved";
+            await WalletRoleController.walletRoleRepository.save(updateWalletRole);
+            res.status(200).json({
+                message: "Leave wallet success!",
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
         }
     }
 

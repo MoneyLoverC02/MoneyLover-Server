@@ -8,6 +8,7 @@ import {WalletRole} from "../models/entity/WalletRole";
 import {User} from "../models/entity/User";
 import WalletRoleController from "./WalletRole.controller";
 import TransactionController from "./Transaction.controller";
+import {Not} from "typeorm";
 
 class WalletController {
     static userRepository = AppDataSource.getRepository(User);
@@ -79,7 +80,8 @@ class WalletController {
                     where: {
                         id: walletID,
                         walletRoles: {
-                            user: user
+                            user: user,
+                            role: Not("leaved")
                         }
                     }
                 });
@@ -119,7 +121,8 @@ class WalletController {
                     },
                     where: {
                         walletRoles: {
-                            user: user
+                            user: user,
+                            role: Not("leaved"),
                         }
                     }
                 });
@@ -151,7 +154,7 @@ class WalletController {
             let walletID: number = +req.params.walletID;
             let userID: number = req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
-            if (walletRole.role !== 'viewer' && walletRole.archived == false) {
+            if ((walletRole.role === 'owner' || walletRole.role === 'using') && walletRole.archived == false) {
                 const updatedWallet = await WalletController.walletRepository.find({
                     relations: {
                         icon: true,
@@ -229,7 +232,7 @@ class WalletController {
         try {
             let walletID: number = +req.params.walletID;
             let userID: number = +req.token.userID
-            let walletRoleTransfer = await WalletRoleController.getWalletRole(walletID, userID);  
+            let walletRoleTransfer = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRoleTransfer.role === "owner" && walletRoleTransfer.archived == false) {
                 const {money, walletIDReceived} = req.body;
                 let walletRoleReceived = await WalletRoleController.getWalletRole(walletIDReceived, userID);
@@ -290,7 +293,7 @@ class WalletController {
             let walletID: number = +req.params.walletID;
             let userID: number = req.token.userID;
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
-            if (walletRole.role !== "viewer") {
+            if (walletRole.role === "owner" || walletRole.role === "using") {
                 let walletRoleToArchived = await WalletRoleController.getWalletRoleListByWalletID(walletID);
                 for (const walletRoleToArchivedElement of walletRoleToArchived) {
                     await WalletRoleController.archivedWalletRoleByWalletRoleID(walletRoleToArchivedElement.id);
