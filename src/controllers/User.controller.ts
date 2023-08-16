@@ -151,6 +151,7 @@ class UserController {
                         walletRoleIDsWereShare.push(walletRole.id);
                     }
                 }
+                console.log(walletRoleIDsWereShare);
                 // delete transactions of shared wallets of user
                 if (walletRoleIDsWereShare.length) {
                     for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
@@ -222,6 +223,15 @@ class UserController {
             res.status(500).json({
                 message: e.message
             });
+        }
+    }
+
+    static async getUserIDByEmail(email: string) {
+        try {
+            let user: User = await UserController.userRepository.findOneBy({ email: email});
+            return user.id;
+        } catch (e) {
+            return e.message;
         }
     }
 
