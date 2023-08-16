@@ -94,7 +94,7 @@ class UserController {
                         email: user.email
                     }
                     const token = jwt.sign(payload, SECRET_KEY, {
-                        expiresIn: 36000
+                        expiresIn: '365d'
                     });
                     res.status(200).json({
                         message: "Login success!",
@@ -292,7 +292,6 @@ class UserController {
     static async resetPassword (req: CustomRequest, res: Response){
         try {
             let {email} = req.body
-            console.log(req.body)
             let user = await UserController.userRepository.findOneBy({email})
             if(user){
                 let newPassword = crypto.randomBytes(4).toString('hex')
