@@ -357,7 +357,7 @@ class TransactionController {
                         date: Between(
                             new Date(parseDate(startDate)),
                             new Date(parseDate(endDate))
-                        )
+                        ), 
                     }
                 });
                 let transactionListBefore = await TransactionController.transactionRepository.find({
