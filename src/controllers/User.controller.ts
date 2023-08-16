@@ -56,7 +56,8 @@ class UserController {
                 let result = await UserController.userRepository.save(newUser);
                 if (result) {
                     let content = `<h3>Please <a href="http://localhost:3000/verify/${verifyEmailToken}">click here</a> to verify your email</h3>`
-                    await UserController.sendEmail(email, content).then(()=>{
+                    let subject = `Confirmed Email Register`
+                    await UserController.sendEmail(email, subject, content).then(()=>{
                         res.status(200).json({
                             message: "Creat user success. Please check your email register for verify!",
                             newUser: result
@@ -224,7 +225,7 @@ class UserController {
         }
     }
 
-    static async sendEmail(email, content) {
+    static async sendEmail(email, subject, content) {
         try {
             if (!email || !content) throw new Error('Please provide email and content!')
             const myAccessTokenObject = await myOAuth2Client.getAccessToken()
@@ -242,7 +243,7 @@ class UserController {
             })
             const mailOptions = {
                 to: email,
-                subject: "Confirmed Email Register",
+                subject: `${subject}`,
                 html: `${content}`
             }
             await transport.sendMail(mailOptions)
@@ -278,7 +279,42 @@ class UserController {
             });
         }
     }
+    static async resetPassword (req: CustomRequest, res: Response){
+        try {
+            let {email} = req.body
+            console.log(req.body)
+            let user = await UserController.userRepository.findOneBy({email})
+            if(user){
+                let newPassword = crypto.randomBytes(4).toString('hex')
+                user.password = await bcrypt.hash(newPassword, config.bcryptSalt);
+                let result = await UserController.userRepository.save(user);
+                if (result) {
+                    let subjectResetPassword = `Reset password email`;
+                    let contentResetPassword = `Your new password is ${newPassword}. Please log in to use! `
+                    await UserController.sendEmail(email,subjectResetPassword,contentResetPassword).then(()=>{
+                        res.status(200).json({
+                            message: "The new password was sent! ",
+                            user: user
+                        });
+                    });
+                } else {
+                    res.json({
+                        message: "Error"
+                    })
+                }
+            } else {
+                res.json({
+                    message: "Email was not existed!"
+                })
+            }
+        } catch (e){
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
 }
+
 
 export default UserController;
 
