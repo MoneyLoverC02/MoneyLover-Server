@@ -26,8 +26,12 @@ class WalletRoleController {
                 }
             });
             if (walletRole.length) {
-                res.json({
-                    message: "WalletRole already exist"
+                let oldWalletRole: WalletRole = walletRole[0];
+                oldWalletRole.role = req.body.role;
+                let result = await WalletRoleController.walletRoleRepository.save(oldWalletRole);
+                res.status(200).json({
+                    message: "Change walletRole success!",
+                    newWallet: result
                 });
             } else {
                 let user = await WalletRoleController.userRoleRepository.findOneBy({id: userID});
