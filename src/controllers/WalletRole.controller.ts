@@ -1,15 +1,17 @@
 import {Response} from "express";
 import {CustomRequest} from "../middlewares/auth";
 import {AppDataSource} from "../models/data-source";
+import {Transaction} from "../models/entity/Transaction";
 import {WalletRole} from "../models/entity/WalletRole";
 import {Wallet} from "../models/entity/Wallet";
 import {User} from "../models/entity/User";
 import {Not} from "typeorm";
 
 class WalletRoleController {
-    static walletRoleRepository = AppDataSource.getRepository(WalletRole);
-    static walletRepository = AppDataSource.getRepository(Wallet);
     static userRoleRepository = AppDataSource.getRepository(User);
+    static walletRepository = AppDataSource.getRepository(Wallet);
+    static walletRoleRepository = AppDataSource.getRepository(WalletRole);
+    static transactionRepository = AppDataSource.getRepository(Transaction);
 
     static async createWalletRole(req: CustomRequest, res: Response) {
         try {
