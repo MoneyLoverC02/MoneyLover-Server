@@ -7,9 +7,9 @@ import {User} from "../models/entity/User";
 import {Not} from "typeorm";
 
 class WalletRoleController {
-    static walletRoleRepository = AppDataSource.getRepository(WalletRole);
-    static walletRepository = AppDataSource.getRepository(Wallet);
     static userRoleRepository = AppDataSource.getRepository(User);
+    static walletRepository = AppDataSource.getRepository(Wallet);
+    static walletRoleRepository = AppDataSource.getRepository(WalletRole);
 
     static async createWalletRole(req: CustomRequest, res: Response) {
         try {
