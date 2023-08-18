@@ -1,14 +1,16 @@
 import {Response} from "express";
+import {User} from "../models/entity/User";
+import {Wallet} from "../models/entity/Wallet";
 import {CustomRequest} from "../middlewares/auth";
 import {AppDataSource} from "../models/data-source";
-import {Wallet} from "../models/entity/Wallet";
 import {Currency} from "../models/entity/Currency";
 import {IconWallet} from "../models/entity/IconWallet";
 import {WalletRole} from "../models/entity/WalletRole";
-import {User} from "../models/entity/User";
+import {Transaction} from "../models/entity/Transaction";
 import WalletRoleController from "./WalletRole.controller";
 import TransactionController from "./Transaction.controller";
 import {Not} from "typeorm";
+import {Category} from "../models/entity/Category";
 
 class WalletController {
     static userRepository = AppDataSource.getRepository(User);
@@ -16,10 +18,11 @@ class WalletController {
     static currencyRepository = AppDataSource.getRepository(Currency);
     static iconWalletRepository = AppDataSource.getRepository(IconWallet);
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
+    static transactionRepository = AppDataSource.getRepository(Transaction);
 
     static async createWallet(req: CustomRequest, res: Response) {
         try {
-            const {name, iconID, currencyID, amountOfMoney} = req.body;
+            const {name, iconID, currencyID, amountOfMoney, date} = req.body;
             let userID: number = req.token.userID;
             let user = await WalletController.userRepository.findOneBy({id: userID});
             let wallet = await WalletController.walletRepository.find({
@@ -31,27 +34,41 @@ class WalletController {
                     }
                 }
             });
-            if (!wallet.length) {
-                let currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
-                let iconWallet = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
-                if (currency && iconWallet) {
-                    let newWallet = new Wallet();
-                    newWallet.name = name;
-                    newWallet.icon = iconWallet;
-                    newWallet.currency = currency;
-                    newWallet.amountOfMoney = +amountOfMoney;
-                    let result = await WalletController.walletRepository.save(newWallet);
-                    if (result) {
-                        res.status(200).json({
-                            message: "Creat wallet success!",
-                            newWallet: result
-                        });
-                    }
-                }
-            } else {
-                res.status(500).json({
+            if (wallet.length) {
+                return res.status(500).json({
                     message: "Name of wallet already exist"
                 });
+            }
+            let currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
+            let iconWallet = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
+            if (currency && iconWallet) {
+                let newWallet = new Wallet();
+                newWallet.name = name;
+                newWallet.icon = iconWallet;
+                newWallet.currency = currency;
+                newWallet.amountOfMoney = +amountOfMoney;
+                let savedWallet: Wallet = await WalletController.walletRepository.save(newWallet);
+
+                let newWalletRole = new WalletRole();
+                newWalletRole.user = user;
+                newWalletRole.wallet = savedWallet;
+                let savedWalletRole: WalletRole = await WalletRoleController.walletRoleRepository.save(newWalletRole);
+
+                const category: Category = await TransactionController.categoryRoleRepository.findOneBy({id: 13});
+                let firstTransaction: Transaction = new Transaction();
+                firstTransaction.amount = +amountOfMoney;
+                firstTransaction.note = 'Initial Balance';
+                firstTransaction.date = date;
+                firstTransaction.category = category;
+                firstTransaction.walletRole = savedWalletRole;
+                let savedTransaction: Transaction = await TransactionController.transactionRepository.save(firstTransaction);
+
+                if (savedWallet && savedWalletRole && savedTransaction) {
+                    res.status(200).json({
+                        message: "Creat wallet success!",
+                        newWallet: savedWallet
+                    });
+                }
             }
         } catch (e) {
             res.status(500).json({
@@ -165,25 +182,58 @@ class WalletController {
                         id: walletID
                     }
                 });
-                const {name, iconID, currencyID, amountOfMoney} = req.body;
+                let {name, iconID, currencyID, amountOfMoney, date} = req.body;
+                let oldAmountOfMoney: number = updatedWallet[0].amountOfMoney;
+                amountOfMoney = parseInt(amountOfMoney);
                 updatedWallet[0].name = name;
-                updatedWallet[0].amountOfMoney = +amountOfMoney;
+                updatedWallet[0].amountOfMoney = amountOfMoney;
                 if (updatedWallet[0].currency.id !== +currencyID) {
                     updatedWallet[0].currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
                 }
                 if (updatedWallet[0].icon.id !== +iconID) {
                     updatedWallet[0].icon = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
                 }
-                let result = await WalletController.walletRepository.save(updatedWallet);
-                if (result) {
-                    res.status(200).json({
-                        message: "Update wallet success!",
-                        updatedWallet: result
-                    });
+                let savedWallet = await WalletController.walletRepository.save(updatedWallet[0]);
+                if (oldAmountOfMoney !== amountOfMoney) {
+                    let walletRole: WalletRole = await WalletRoleController.getWalletRole(savedWallet.id, userID);
+                    let categoryID: number = 0;
+                    let transactionAmount: number = 0;
+                    if (oldAmountOfMoney < amountOfMoney) {
+                        transactionAmount = -oldAmountOfMoney + amountOfMoney;
+                        categoryID = 13;
+                    } else {
+                        transactionAmount = oldAmountOfMoney - amountOfMoney;
+                        categoryID = 5;
+                    }
+                    let category: Category = await TransactionController.categoryRoleRepository.findOneBy({id: categoryID});
+                    let newTransaction: Transaction = new Transaction();
+                    newTransaction.amount = transactionAmount;
+                    newTransaction.note = 'Initial Balance';
+                    newTransaction.date = date;
+                    newTransaction.category = category;
+                    newTransaction.walletRole = walletRole;
+                    let savedTransaction: Transaction = await TransactionController.transactionRepository.save(newTransaction);
+                    if (savedWallet && savedTransaction) {
+                        res.status(200).json({
+                            message: "Update wallet success!",
+                            updatedWallet: savedWallet
+                        });
+                    } else {
+                        res.json({
+                            message: "Update wallet failed!",
+                        });
+                    }
                 } else {
-                    res.json({
-                        message: "Update wallet failed!",
-                    });
+                    if (savedWallet) {
+                        res.status(200).json({
+                            message: "Update wallet success!",
+                            updatedWallet: savedWallet
+                        });
+                    } else {
+                        res.json({
+                            message: "Update wallet failed!",
+                        });
+                    }
                 }
             } else {
                 res.status(500).json({
