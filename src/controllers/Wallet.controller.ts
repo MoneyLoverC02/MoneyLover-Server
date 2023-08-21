@@ -66,7 +66,8 @@ class WalletController {
                 if (savedWallet && savedWalletRole && savedTransaction) {
                     res.status(200).json({
                         message: "Creat wallet success!",
-                        newWallet: savedWallet
+                        newWallet: savedWallet,
+                        walletRole: savedWalletRole
                     });
                 }
             }
