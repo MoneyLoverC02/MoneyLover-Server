@@ -1,5 +1,6 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany} from "typeorm";
 import {WalletRole} from "./WalletRole";
+import {Category} from "./Category";
 
 @Entity()
 
@@ -21,4 +22,7 @@ export class User {
 
     @OneToMany(() => WalletRole, walletRoles => walletRoles.user)
     walletRoles: WalletRole[];
+
+    @OneToMany(() => Category, category => category.user)
+    category: Category[];
 }

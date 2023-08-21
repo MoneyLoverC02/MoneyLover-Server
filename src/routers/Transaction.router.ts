@@ -3,7 +3,7 @@ import TransactionController from "../controllers/Transaction.controller";
 
 const transactionRouter = express.Router();
 
-transactionRouter.post('/users/wallets/:walletID/transactions', TransactionController.addTransaction);
+transactionRouter.post('/users/wallets/:walletID/transactions', TransactionController.createTransaction);
 transactionRouter.get('/users/wallets/:walletID/transactions', TransactionController.getTransactionListByWalletID);
 transactionRouter.get('/users/wallets/:walletID/transactions/:transactionID', TransactionController.getTransaction);
 transactionRouter.delete('/users/wallets/:walletID/transactions/:transactionID', TransactionController.deleteTransaction);
