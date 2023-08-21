@@ -13,7 +13,7 @@ import {Between, LessThan} from "typeorm";
 class TransactionController {
     static userRepository = AppDataSource.getRepository(User);
     static walletRepository = AppDataSource.getRepository(Wallet);
-    static categoryRoleRepository = AppDataSource.getRepository(Category);
+    static categoryRepository = AppDataSource.getRepository(Category);
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
     static transactionRepository = AppDataSource.getRepository(Transaction);
 
@@ -38,7 +38,7 @@ class TransactionController {
             let walletRole = await WalletRoleController.getWalletRole(walletID, userID);
             if ((walletRole.role === "owner" || walletRole.role === "using") && !walletRole.archived) {
                 const {amount, date, note, categoryID} = req.body;
-                let category: Category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
+                let category: Category = await TransactionController.categoryRepository.findOneBy({id: +categoryID});
                 const newTransaction: Transaction = await TransactionController.addNewTransaction(category, +amount, date, note, walletRole);
                 if (newTransaction) {
                     if (category.type === "expense") {
@@ -211,7 +211,7 @@ class TransactionController {
                 updatedTransaction[0].amount = +amount;
                 updatedTransaction[0].note = note;
                 updatedTransaction[0].date = date;
-                let newCategory: Category = await TransactionController.categoryRoleRepository.findOneBy({id: +categoryID});
+                let newCategory: Category = await TransactionController.categoryRepository.findOneBy({id: +categoryID});
                 let oldCategoryType: string = updatedTransaction[0].category.type;
                 let newCategoryType: string = newCategory.type;
                 let caseAdjustAmountOfMoney: number;
