@@ -253,6 +253,10 @@ class WalletController {
                     res.status(200).json({
                         message: "Delete wallet success!",
                     });
+                } else {
+                    res.status(404).json({
+                        message: 'Wallet not found or not deleted.',
+                    });
                 }
             } else {
                 res.status(500).json({
