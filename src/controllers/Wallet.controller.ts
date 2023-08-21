@@ -17,7 +17,7 @@ class WalletController {
     static userRepository = AppDataSource.getRepository(User);
     static walletRepository = AppDataSource.getRepository(Wallet);
     static currencyRepository = AppDataSource.getRepository(Currency);
-    static categoryRoleRepository = AppDataSource.getRepository(Category);
+    static categoryRepository = AppDataSource.getRepository(Category);
     static iconWalletRepository = AppDataSource.getRepository(IconWallet);
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
     static transactionRepository = AppDataSource.getRepository(Transaction);
@@ -54,9 +54,9 @@ class WalletController {
                 let newWalletRole = new WalletRole();
                 newWalletRole.user = user;
                 newWalletRole.wallet = savedWallet;
-                let savedWalletRole: WalletRole = await WalletRoleController.walletRoleRepository.save(newWalletRole);
+                const savedWalletRole: WalletRole = await WalletRoleController.walletRoleRepository.save(newWalletRole);
 
-                const category: Category = await WalletController.categoryRoleRepository.findOneBy({id: 13});
+                const category: Category = await WalletController.categoryRepository.findOneBy({id: 13});
                 const savedTransaction: Transaction = await TransactionController.addNewTransaction(category, +amountOfMoney, date, 'Initial Balance', savedWalletRole);
 
                 if (savedWallet && savedWalletRole && savedTransaction) {
@@ -202,7 +202,7 @@ class WalletController {
                         transactionAmount = oldAmountOfMoney - amountOfMoney;
                         categoryID = 5;
                     }
-                    let category: Category = await WalletController.categoryRoleRepository.findOneBy({id: categoryID});
+                    let category: Category = await WalletController.categoryRepository.findOneBy({id: categoryID});
 
                     let savedTransaction: Transaction = await TransactionController.addNewTransaction(category, transactionAmount, date, 'Initial Balance', walletRole);
 
@@ -274,7 +274,7 @@ class WalletController {
     static async transferMoneyToAnotherWallet(req: CustomRequest, res: Response) {
         try {
             let walletID: number = +req.params.walletID;
-            let userID: number = +req.token.userID
+            let userID: number = req.token.userID;
             let walletRoleTransfer = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRoleTransfer.role === "owner" && walletRoleTransfer.archived == false) {
                 const {money, walletIDReceived, date} = req.body;
@@ -304,8 +304,8 @@ class WalletController {
                         walletReceived[0].amountOfMoney = walletReceived[0].amountOfMoney + money;
                         await WalletController.walletRepository.save(walletReceived[0]);
 
-                        const categoryTransfer: Category = await WalletController.categoryRoleRepository.findOneBy({id: 7});
-                        const categoryReceived: Category = await WalletController.categoryRoleRepository.findOneBy({id: 14});
+                        const categoryTransfer: Category = await WalletController.categoryRepository.findOneBy({id: 7});
+                        const categoryReceived: Category = await WalletController.categoryRepository.findOneBy({id: 14});
 
                         await TransactionController.addNewTransaction(categoryTransfer, money, date, "money transferred", walletRoleTransfer);
                         await TransactionController.addNewTransaction(categoryReceived, money, date, "money received", walletRoleReceived);

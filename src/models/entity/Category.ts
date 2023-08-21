@@ -11,6 +11,9 @@ export class Category {
     @Column({type: "varchar"})
     public type: string;
 
+    @Column({type: "varchar"})
+    public subType: string;
+
     @Column({default: "https://static.moneylover.me/img/icon/icon_135.png" , type: "varchar"})
     public icon: string;
 
