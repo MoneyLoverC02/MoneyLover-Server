@@ -3,6 +3,8 @@ import {User} from "../models/entity/User";
 import {CustomRequest} from "../middlewares/auth";
 import {Category} from "../models/entity/Category";
 import {AppDataSource} from "../models/data-source";
+import TransactionController from "./Transaction.controller";
+import {Transaction} from "../models/entity/Transaction";
 
 class CategoryController {
     static categoryRepository = AppDataSource.getRepository(Category);
@@ -60,6 +62,61 @@ class CategoryController {
                 res.status(200).json({
                     message: "Create category success",
                     category: savedCategory
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
+    static async deleteCategory(req: CustomRequest, res: Response) {
+        try {
+            const userID: number = req.token.userID;
+            const categoryID: number = +req.params.categoryID;
+            const transactionList: Transaction[] | string = await TransactionController.getTransactionByCategoryID(categoryID);
+            if (typeof transactionList !== "string") {
+                for (const transaction of transactionList) {
+                    let walletID: number = transaction.walletRole.wallet.id;
+                    await TransactionController.deleteTransactionByTransactionID(userID, walletID, transaction.id);
+                }
+            }
+            const deleteCategoryResult = await CategoryController.categoryRepository.delete({
+                id: categoryID,
+            });
+            if (deleteCategoryResult.affected === 1) {
+                res.status(200).json({
+                    message: 'Delete category success!',
+                });
+            } else {
+                res.status(404).json({
+                    message: 'Category not found or not deleted.',
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
+    static async updateCategory(req: CustomRequest, res: Response) {
+        try {
+            const categoryID: number = +req.params.categoryID;
+            const {type, name} = req.body;
+            const updateCategory: Category = await CategoryController.categoryRepository.findOneBy({id: categoryID});
+            updateCategory.type = type;
+            updateCategory.name = name;
+            const savedCategory: Category = await CategoryController.categoryRepository.save(updateCategory);
+            if (savedCategory) {
+                res.status(200).json({
+                    message: "Update category success!",
+                    updateCategory: savedCategory
+                });
+            } else {
+                res.json({
+                    message: "Update category failed!",
                 });
             }
         } catch (e) {
