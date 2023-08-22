@@ -67,10 +67,9 @@ class TransactionController {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
-           // const {startDate, endDate} = req.query;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
-                let transactions = await TransactionController.transactionRepository.find({
+                let transactionList = await TransactionController.transactionRepository.find({
                     relations: {
                         category: true,
                         walletRole: {
@@ -83,26 +82,10 @@ class TransactionController {
                             wallet: {
                                 id: walletID
                             }
-                        },
-                        // date: Between(
-                        //     new Date(parseDate(startDate)),
-                        //     new Date(parseDate(endDate))
-                        // ),
+                        }
                     }
                 });
-                if (transactions.length) {
-                    const groupedCategory = [];
-                    transactions.forEach(transaction => {
-                        const category = transaction.category.name;
-                        if (!groupedCategory[category]) {
-                            groupedCategory[category] = [];
-                        }
-                        groupedCategory[category].push(transaction);
-                    });
-                    const transactionList = [];
-                    for (const category in groupedCategory) {
-                        transactionList.push(groupedCategory[category]);
-                    }
+                if (transactionList.length) {
                     res.status(200).json({
                         message: "Get transaction list success!",
                         transactionList: transactionList
@@ -110,7 +93,7 @@ class TransactionController {
                 } else {
                     res.status(200).json({
                         message: "No data!",
-                        transactionList: transactions
+                        transactionList: transactionList
                     });
                 }
             } else {
@@ -129,6 +112,7 @@ class TransactionController {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
+            const {startDate, endDate} = req.query;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 let transactions = await TransactionController.transactionRepository.find({
@@ -144,7 +128,11 @@ class TransactionController {
                             wallet: {
                                 id: walletID
                             }
-                        }
+                        },
+                        date: Between(
+                            new Date(parseDate(startDate)),
+                            new Date(parseDate(endDate))
+                        )
                     }
                 });
                 if (transactions.length) {
