@@ -108,6 +108,63 @@ class TransactionController {
         }
     }
 
+    static async getTransactionListByWalletIDAndType(req: CustomRequest, res: Response) {
+        try {
+            const walletID: number = +req.params.walletID;
+            const userID: number = +req.token.userID;
+            let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
+            if (walletRole) {
+                let transactions = await TransactionController.transactionRepository.find({
+                    relations: {
+                        category: true,
+                        walletRole: {
+                            user: true,
+                            wallet: true
+                        }
+                    },
+                    where: {
+                        walletRole: {
+                            wallet: {
+                                id: walletID
+                            }
+                        }
+                    }
+                });
+                if (transactions.length) {
+                    const groupedCategory = [];
+                    transactions.forEach(transaction => {
+                        const category = transaction.category.name;
+                        if (!groupedCategory[category]) {
+                            groupedCategory[category] = [];
+                        }
+                        groupedCategory[category].push(transaction);
+                    });
+                    const transactionList = [];
+                    for (const category in groupedCategory) {
+                        transactionList.push(groupedCategory[category]);
+                    }
+                    res.status(200).json({
+                        message: "Get transaction list success!",
+                        transactionList: transactionList
+                    });
+                } else {
+                    res.status(200).json({
+                        message: "No data!",
+                        transactionList: transactions
+                    });
+                }
+            } else {
+                res.status(200).json({
+                    message: "No permission to get transaction list!"
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
     static async getTransaction(req: CustomRequest, res: Response) {
         try {
             const walletID: number = +req.params.walletID;
