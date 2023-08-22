@@ -112,6 +112,7 @@ class TransactionController {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
+            const {startDate, endDate} = req.query;
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
                 let transactions = await TransactionController.transactionRepository.find({
@@ -127,7 +128,11 @@ class TransactionController {
                             wallet: {
                                 id: walletID
                             }
-                        }
+                        },
+                        date: Between(
+                            new Date(parseDate(startDate)),
+                            new Date(parseDate(endDate))
+                        )
                     }
                 });
                 if (transactions.length) {
