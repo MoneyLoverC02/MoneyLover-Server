@@ -1,5 +1,6 @@
 import express from "express";
 import TransactionController from "../controllers/Transaction.controller";
+import ExportExcel from "../service/exportExcel";
 
 const transactionRouter = express.Router();
 
@@ -11,5 +12,6 @@ transactionRouter.delete('/users/wallets/:walletID/transactions/:transactionID',
 transactionRouter.put('/users/wallets/:walletID/transactions/:transactionID', TransactionController.updateTransaction);
 transactionRouter.get('/users/wallets/:walletID/report', TransactionController.getAllTransactionByTimeRange);
 transactionRouter.get('/users/wallets/:walletID/search', TransactionController.searchAllTransactionByTimeRangeAndCategory);
+transactionRouter.get('/users/wallets/:walletID/ExportExcel', ExportExcel.exportTransactionOfWalletByMonth);
 
 export default transactionRouter;
