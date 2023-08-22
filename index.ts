@@ -14,6 +14,7 @@ import iconWalletRouter from "./src/routers/IconWallet.router";
 import walletRoleRouter from "./src/routers/WalletRole.router";
 import transactionRouter from "./src/routers/Transaction.router";
 import UserController from "./src/controllers/User.controller";
+import WalletController from "./src/controllers/Wallet.controller";
 
 AppDataSource.initialize()
     .then(() => {
@@ -73,7 +74,7 @@ const pendingMessages: MessageData = {};
 const pendingResponseMessages: ResponseMessageData = {}
 
 io.on('connection', (socket: Socket) => {
-    console.log("Client connected: ", socket.id);
+    // console.log("Client connected: ", socket.id);
 
     socket.on('login', async (email: string) => {
         const userID = await UserController.getUserIDByEmail(email);
@@ -92,8 +93,8 @@ io.on('connection', (socket: Socket) => {
                 delete pendingResponseMessages[userID];
             }
         }
-        console.log("Clients in now");
-        console.log(connectedUsers);
+        // console.log("Clients in now");
+        // console.log(connectedUsers);
     });
 
     socket.on('sendMessage', async (data) => {
@@ -122,9 +123,9 @@ io.on('connection', (socket: Socket) => {
 
     socket.on('responseMessage', async (data) => {
         const {response, senderEmail, receiverEmail, walletID} = data;
-        console.log("<<<<<<<<<<<<<");
-        console.log(data);
-        console.log("<<<<<<<<<<<<<");
+        // console.log("<<<<<<<<<<<<<");
+        // console.log(data);
+        // console.log("<<<<<<<<<<<<<");
         const receiverID = await UserController.getUserIDByEmail(receiverEmail);
         let receiverSocketId: string = '';
         for (const user of connectedUsers) {
@@ -152,8 +153,8 @@ io.on('connection', (socket: Socket) => {
         if (userIndexToDelete !== -1) {
             connectedUsers.splice(userIndexToDelete, 1);
         }
-        console.log("Clients after logout");
-        console.log(connectedUsers);
+        // console.log("Clients after logout");
+        // console.log(connectedUsers);
         socket.disconnect();
     });
 
@@ -163,12 +164,11 @@ io.on('connection', (socket: Socket) => {
         if (userIndexToDelete !== -1) {
             connectedUsers.splice(userIndexToDelete, 1);
         }
-        console.log("Clients after disconnect");
-        console.log(connectedUsers);
+        // console.log("Clients after disconnect");
+        // console.log(connectedUsers);
     });
 
 });
-
 server.listen(4000, () => {
     console.log("Server is running at http://localhost:4000");
 });

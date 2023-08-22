@@ -9,6 +9,7 @@ import {User} from "../models/entity/User";
 import WalletRoleController from "./WalletRole.controller";
 import TransactionController from "./Transaction.controller";
 import {Not} from "typeorm";
+import UserController from "./User.controller";
 
 class WalletController {
     static userRepository = AppDataSource.getRepository(User);
@@ -131,11 +132,13 @@ class WalletController {
                         message: "Get walletList success",
                         walletList: walletList
                     });
+                    return walletList;
                 } else {
                     res.status(200).json({
                         message: "No data!",
                         walletList: walletList
                     });
+                    return walletList;
                 }
             } else {
                 res.status(200).json({
@@ -322,7 +325,6 @@ class WalletController {
             return e.message;
         }
     }
-
 }
 
 export default WalletController;

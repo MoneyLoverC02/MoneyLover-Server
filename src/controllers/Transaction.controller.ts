@@ -8,10 +8,11 @@ import { User } from "../models/entity/User";
 import { Transaction } from "../models/entity/Transaction";
 import WalletRoleController from "./WalletRole.controller";
 import WalletController from "./Wallet.controller";
-import { Between, LessThan, LessThanOrEqual } from "typeorm";
+import { Between, LessThan} from "typeorm";
 
 class TransactionController {
     static userRepository = AppDataSource.getRepository(User);
+
     static walletRepository = AppDataSource.getRepository(Wallet);
     static categoryRoleRepository = AppDataSource.getRepository(Category);
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
@@ -476,6 +477,58 @@ class TransactionController {
         }
     }
 
+    static async getAllTransactionByTimeRangeBE(userID, walletID, startDateBE, endDateBE) {
+        try {
+            let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
+            if (walletRole) {
+                let transactionListIntimeBE = await TransactionController.transactionRepository.find({
+                    relations: {
+                        category: true,
+                        walletRole: {
+                            user: true,
+                            wallet: true
+                        }
+                    },
+                    where: {
+                        walletRole: {
+                            wallet: {
+                                id: walletID
+                            }
+                        },
+                        date: Between(
+                            new Date(parseDate(startDateBE)),
+                            new Date(parseDate(endDateBE))
+                        ),
+                    }
+                });
+                let transactionListBeforeBE = await TransactionController.transactionRepository.find({
+                    relations: {
+                        category: true,
+                        walletRole: {
+                            user: true,
+                            wallet: true
+                        }
+                    },
+                    where: {
+                        walletRole: {
+                            wallet: {
+                                id: walletID
+                            }
+                        },
+                        date: LessThan(
+                            new Date(parseDate(startDateBE))
+                        )
+                    }
+                });
+                return {transactionListBeforeBE:transactionListBeforeBE,
+                    transactionListIntimeBE:transactionListIntimeBE}
+            } else {
+                console.log("No permission to get transaction list!")
+            }
+        } catch (e) {
+            console.log(e.message)
+        }
+    }
 }
 
 function parseDate(input) {
