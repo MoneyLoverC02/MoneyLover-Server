@@ -149,36 +149,67 @@ class TransactionController {
         }
     }
 
+    static async getTransactionByCategoryID(categoryID: number) {
+        const transactionList: Transaction[] = await TransactionController.transactionRepository.find({
+            relations: {
+                walletRole: {
+                    wallet: true
+                }
+            }, where: {
+                category: {
+                    id: categoryID
+                }
+            }
+        });
+        if (transactionList.length > 0) {
+            return transactionList;
+        } else {
+            return 'Transactions not found!'
+        }
+    }
+
+    static async deleteTransactionByTransactionID(userID: number, walletID: number, transactionID: number) {
+        let transactionDeleted: Transaction[] = await TransactionController.transactionRepository.find({
+            relations: {
+                category: true,
+                walletRole: {
+                    user: true
+                }
+            },
+            where: {
+                id: transactionID
+            }
+        });
+        if (userID === transactionDeleted[0].walletRole.user.id && (transactionDeleted[0].walletRole.role === "owner" || transactionDeleted[0].walletRole.role === "using") && transactionDeleted[0].walletRole.archived == false) {
+            let deletedTransaction = await TransactionController.transactionRepository.delete({id: transactionID});
+            if (transactionDeleted[0].category.type === 'expense') {
+                await WalletController.adjustAmountOfMoneyOfWallet(walletID, transactionDeleted[0].amount);
+            } else {
+                await WalletController.adjustAmountOfMoneyOfWallet(walletID, -transactionDeleted[0].amount);
+            }
+            return deletedTransaction.affected;
+        } else {
+            return "No permission to delete!";
+        }
+    }
+
     static async deleteTransaction(req: CustomRequest, res: Response) {
         try {
             const walletID: number = +req.params.walletID;
             const userID: number = +req.token.userID;
             const transactionID: number = +req.params.transactionID;
-            let transactionDeleted: Transaction[] = await TransactionController.transactionRepository.find({
-                relations: {
-                    category: true,
-                    walletRole: {
-                        user: true
-                    }
-                },
-                where: {
-                    id: transactionID
-                }
-            });
-            if (userID === transactionDeleted[0].walletRole.user.id && (transactionDeleted[0].walletRole.role === "owner" || transactionDeleted[0].walletRole.role === "using") && transactionDeleted[0].walletRole.archived == false) {
-                let deletedTransaction = await TransactionController.transactionRepository.delete({id: transactionID});
-                if (transactionDeleted[0].category.type === 'expense') {
-                    await WalletController.adjustAmountOfMoneyOfWallet(walletID, transactionDeleted[0].amount);
-                } else {
-                    await WalletController.adjustAmountOfMoneyOfWallet(walletID, -transactionDeleted[0].amount);
-                }
+            const result: number | string = await TransactionController.deleteTransactionByTransactionID(userID, walletID, transactionID);
+            if (result === 1) {
                 res.status(200).json({
-                    message: "Delete transaction success!",
-                    numberOfTransactionDeleted: deletedTransaction.affected
+                    message: 'Delete transaction success!',
+                });
+            } else if (result === 0) {
+                res.status(404).json({
+                    message: 'Transaction not found or not deleted.',
                 });
             } else {
-                res.json({
-                    message: "No permission to delete!"
+                res.status(403).json({
+                    message: 'No permission to delete!',
                 });
             }
         } catch (e) {
@@ -492,28 +523,3 @@ function parseDate(input: any) {
 }
 
 export default TransactionController;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
