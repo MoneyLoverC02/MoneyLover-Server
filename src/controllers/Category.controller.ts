@@ -101,6 +101,31 @@ class CategoryController {
         }
     }
 
+    static async updateCategory(req: CustomRequest, res: Response) {
+        try {
+            const categoryID: number = +req.params.categoryID;
+            const {type, name} = req.body;
+            const updateCategory: Category = await CategoryController.categoryRepository.findOneBy({id: categoryID});
+            updateCategory.type = type;
+            updateCategory.name = name;
+            const savedCategory: Category = await CategoryController.categoryRepository.save(updateCategory);
+            if (savedCategory) {
+                res.status(200).json({
+                    message: "Update category success!",
+                    updateCategory: savedCategory
+                });
+            } else {
+                res.json({
+                    message: "Update category failed!",
+                });
+            }
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
+
 }
 
 export default CategoryController;
