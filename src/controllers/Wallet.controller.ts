@@ -11,8 +11,6 @@ import {Transaction} from "../models/entity/Transaction";
 import WalletRoleController from "./WalletRole.controller";
 import TransactionController from "./Transaction.controller";
 import {Not} from "typeorm";
-import UserController from "./User.controller";
-
 
 class WalletController {
     static userRepository = AppDataSource.getRepository(User);

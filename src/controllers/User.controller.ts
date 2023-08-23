@@ -15,6 +15,7 @@ import {OAuth2Client} from 'google-auth-library'
 import walletController from "./Wallet.controller";
 import transactionController from "./Transaction.controller";
 import cron from "node-cron"
+import CategoryController from "./Category.controller";
 const crypto = require('crypto');
 
 const GOOGLE_MAILER_CLIENT_ID =
@@ -189,7 +190,6 @@ class UserController {
                         walletRoleIDsWereShare.push(walletRole.id);
                     }
                 }
-                console.log(walletRoleIDsWereShare);
                 // delete transactions of shared wallets of user
                 if (walletRoleIDsWereShare.length) {
                     for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
@@ -198,6 +198,8 @@ class UserController {
                 }
                 // delete the rest transactions of user
                 await TransactionController.deleteTransactionByUserID(userID);
+                // delete the categories in category table
+                await CategoryController.deleteCategoryByUserID(userID);
                 // get the walletIDs that have the role of "owner" and belong to the user that needs to be deleted
                 let walletIDsHaveOwnerRole: number[] = [];
                 for (const walletRole of walletRoleList) {
@@ -380,14 +382,15 @@ class UserController {
             let contentReport = [];
             for (let wallet of listWallet) {
                 let transactions = await transactionController.getAllTransactionByTimeRangeBE(req.token.userID, wallet.id, formatDate(firstDay), formatDate(lastDay))
-                let balance = viewBalance(transactions.transactionListIntimeBE, transactions.transactionListBeforeBE)
+                let balance = viewBalance(transactions.transactionListInTimeBE, transactions.transactionListBeforeBE)
                 contentReport.push({
                     name: wallet.name,
-                    transInTime: transactions.transactionListIntimeBE,
+                    transInTime: transactions.transactionListInTimeBE,
                     openingBalance: balance.openingBalance,
                     endingBalance: balance.endingBalance
                 })
             }
+            // console.log(contentReport)
             let email = req.token.email
             let subject = `Monthly report in ${months[previousMonthIndex]}`
             let contentReportInMail = "";
@@ -404,7 +407,7 @@ class UserController {
                         - Transactions in time:
                         <br>
                     `;
-                let transactionIndex = 1;
+                let transactionIndex = 1; // Biến đếm chỉ số giao dịch
                 for (const transaction of content.transInTime) {
                     data += `
                     <br>
@@ -421,7 +424,7 @@ class UserController {
                 }
                 contentReportInMail += data;
             }
-            cron.schedule(`15 11 * * *`, async () => {
+            cron.schedule(`23 14 * * *`, async () => {
                 await UserController.sendEmail(email, subject, contentReportInMail).then(() => {
                     res.status(200).json({
                         message: " Monthly report email was sent"

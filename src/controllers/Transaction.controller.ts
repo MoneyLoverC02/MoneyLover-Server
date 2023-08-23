@@ -577,11 +577,11 @@ class TransactionController {
         }
     }
 
-    static async getAllTransactionByTimeRangeBE(userID, walletID, startDateBE, endDateBE) {
+    static async getAllTransactionByTimeRangeBE(userID: number, walletID: number, startDateBE: string, endDateBE: string) {
         try {
             let walletRole: WalletRole | undefined = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRole) {
-                let transactionListIntimeBE = await TransactionController.transactionRepository.find({
+                let transactionListInTimeBE = await TransactionController.transactionRepository.find({
                     relations: {
                         category: true,
                         walletRole: {
@@ -621,7 +621,7 @@ class TransactionController {
                     }
                 });
                 return {transactionListBeforeBE:transactionListBeforeBE,
-                    transactionListIntimeBE:transactionListIntimeBE}
+                    transactionListInTimeBE:transactionListInTimeBE}
             } else {
                 console.log("No permission to get transaction list!")
             }
