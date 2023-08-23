@@ -15,6 +15,7 @@ import {OAuth2Client} from 'google-auth-library'
 import walletController from "./Wallet.controller";
 import transactionController from "./Transaction.controller";
 import cron from "node-cron"
+import CategoryController from "./Category.controller";
 const crypto = require('crypto');
 
 const GOOGLE_MAILER_CLIENT_ID =
@@ -189,7 +190,6 @@ class UserController {
                         walletRoleIDsWereShare.push(walletRole.id);
                     }
                 }
-                console.log(walletRoleIDsWereShare);
                 // delete transactions of shared wallets of user
                 if (walletRoleIDsWereShare.length) {
                     for (const walletRoleIDWereShare of walletRoleIDsWereShare) {
@@ -198,6 +198,8 @@ class UserController {
                 }
                 // delete the rest transactions of user
                 await TransactionController.deleteTransactionByUserID(userID);
+                // delete the categories in category table
+                await CategoryController.deleteCategoryByUserID(userID);
                 // get the walletIDs that have the role of "owner" and belong to the user that needs to be deleted
                 let walletIDsHaveOwnerRole: number[] = [];
                 for (const walletRole of walletRoleList) {
@@ -380,10 +382,10 @@ class UserController {
             let contentReport = [];
             for (let wallet of listWallet) {
                 let transactions = await transactionController.getAllTransactionByTimeRangeBE(req.token.userID, wallet.id, formatDate(firstDay), formatDate(lastDay))
-                let balance = viewBalance(transactions.transactionListIntimeBE, transactions.transactionListBeforeBE)
+                let balance = viewBalance(transactions.transactionListInTimeBE, transactions.transactionListBeforeBE)
                 contentReport.push({
                     name: wallet.name,
-                    transIntime: transactions.transactionListIntimeBE,
+                    transInTime: transactions.transactionListInTimeBE,
                     openingBalance: balance.openingBalance,
                     endingBalance: balance.endingBalance
                 })
