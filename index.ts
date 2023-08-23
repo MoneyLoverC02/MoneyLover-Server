@@ -14,7 +14,6 @@ import iconWalletRouter from "./src/routers/IconWallet.router";
 import walletRoleRouter from "./src/routers/WalletRole.router";
 import transactionRouter from "./src/routers/Transaction.router";
 import UserController from "./src/controllers/User.controller";
-import WalletController from "./src/controllers/Wallet.controller";
 
 AppDataSource.initialize()
     .then(() => {
@@ -74,7 +73,7 @@ const pendingMessages: MessageData = {};
 const pendingResponseMessages: ResponseMessageData = {}
 
 io.on('connection', (socket: Socket) => {
-    // console.log("Client connected: ", socket.id);
+    console.log("Client connected: ", socket.id);
 
     socket.on('login', async (email: string) => {
         const userID = await UserController.getUserIDByEmail(email);
@@ -154,7 +153,7 @@ io.on('connection', (socket: Socket) => {
             connectedUsers.splice(userIndexToDelete, 1);
         }
         // console.log("Clients after logout");
-        // console.log(connectedUsers);
+        console.log(connectedUsers);
         socket.disconnect();
     });
 
@@ -165,10 +164,11 @@ io.on('connection', (socket: Socket) => {
             connectedUsers.splice(userIndexToDelete, 1);
         }
         // console.log("Clients after disconnect");
-        // console.log(connectedUsers);
+        console.log(connectedUsers);
     });
 
 });
+
 server.listen(4000, () => {
     console.log("Server is running at http://localhost:4000");
 });

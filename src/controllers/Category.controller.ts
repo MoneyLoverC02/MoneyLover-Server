@@ -125,6 +125,19 @@ class CategoryController {
         }
     }
 
+    static async deleteCategoryByUserID(userID: number) {
+        try {
+            const deletedCategory = await CategoryController.categoryRepository.delete({
+                user: {
+                    id: userID
+                }
+            });
+            return deletedCategory.affected;
+        } catch (e) {
+            return e.message;
+        }
+    }
+
 }
 
 export default CategoryController;
