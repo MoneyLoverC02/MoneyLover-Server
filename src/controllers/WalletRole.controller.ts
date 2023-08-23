@@ -7,14 +7,14 @@ import {User} from "../models/entity/User";
 import {Not} from "typeorm";
 
 class WalletRoleController {
-    static walletRoleRepository = AppDataSource.getRepository(WalletRole);
-    static walletRepository = AppDataSource.getRepository(Wallet);
     static userRoleRepository = AppDataSource.getRepository(User);
+    static walletRepository = AppDataSource.getRepository(Wallet);
+    static walletRoleRepository = AppDataSource.getRepository(WalletRole);
 
     static async createWalletRole(req: CustomRequest, res: Response) {
         try {
             const walletID: number = +req.body.walletID;
-            const userID: number = +req.token.userID;
+            const userID: number = req.token.userID;
             let walletRole = await WalletRoleController.walletRoleRepository.find({
                 where: {
                     user: {
@@ -26,8 +26,12 @@ class WalletRoleController {
                 }
             });
             if (walletRole.length) {
-                res.json({
-                    message: "WalletRole already exist"
+                let oldWalletRole: WalletRole = walletRole[0];
+                oldWalletRole.role = req.body.role;
+                let result = await WalletRoleController.walletRoleRepository.save(oldWalletRole);
+                res.status(200).json({
+                    message: "Change walletRole success!",
+                    newWallet: result
                 });
             } else {
                 let user = await WalletRoleController.userRoleRepository.findOneBy({id: userID});

@@ -1,26 +1,31 @@
 import {Response} from "express";
+import {User} from "../models/entity/User";
+import {Wallet} from "../models/entity/Wallet";
 import {CustomRequest} from "../middlewares/auth";
 import {AppDataSource} from "../models/data-source";
-import {Wallet} from "../models/entity/Wallet";
 import {Currency} from "../models/entity/Currency";
+import {Category} from "../models/entity/Category";
 import {IconWallet} from "../models/entity/IconWallet";
 import {WalletRole} from "../models/entity/WalletRole";
-import {User} from "../models/entity/User";
+import {Transaction} from "../models/entity/Transaction";
 import WalletRoleController from "./WalletRole.controller";
 import TransactionController from "./Transaction.controller";
 import {Not} from "typeorm";
 import UserController from "./User.controller";
 
+
 class WalletController {
     static userRepository = AppDataSource.getRepository(User);
     static walletRepository = AppDataSource.getRepository(Wallet);
     static currencyRepository = AppDataSource.getRepository(Currency);
+    static categoryRepository = AppDataSource.getRepository(Category);
     static iconWalletRepository = AppDataSource.getRepository(IconWallet);
     static walletRoleRepository = AppDataSource.getRepository(WalletRole);
+    static transactionRepository = AppDataSource.getRepository(Transaction);
 
     static async createWallet(req: CustomRequest, res: Response) {
         try {
-            const {name, iconID, currencyID, amountOfMoney} = req.body;
+            const {name, iconID, currencyID, amountOfMoney, date} = req.body;
             let userID: number = req.token.userID;
             let user = await WalletController.userRepository.findOneBy({id: userID});
             let wallet = await WalletController.walletRepository.find({
@@ -32,27 +37,36 @@ class WalletController {
                     }
                 }
             });
-            if (!wallet.length) {
-                let currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
-                let iconWallet = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
-                if (currency && iconWallet) {
-                    let newWallet = new Wallet();
-                    newWallet.name = name;
-                    newWallet.icon = iconWallet;
-                    newWallet.currency = currency;
-                    newWallet.amountOfMoney = +amountOfMoney;
-                    let result = await WalletController.walletRepository.save(newWallet);
-                    if (result) {
-                        res.status(200).json({
-                            message: "Creat wallet success!",
-                            newWallet: result
-                        });
-                    }
-                }
-            } else {
-                res.status(500).json({
+            if (wallet.length) {
+                return res.status(500).json({
                     message: "Name of wallet already exist"
                 });
+            }
+            let currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
+            let iconWallet = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
+            if (currency && iconWallet) {
+                let newWallet = new Wallet();
+                newWallet.name = name;
+                newWallet.icon = iconWallet;
+                newWallet.currency = currency;
+                newWallet.amountOfMoney = +amountOfMoney;
+                let savedWallet: Wallet = await WalletController.walletRepository.save(newWallet);
+
+                let newWalletRole = new WalletRole();
+                newWalletRole.user = user;
+                newWalletRole.wallet = savedWallet;
+                const savedWalletRole: WalletRole = await WalletRoleController.walletRoleRepository.save(newWalletRole);
+
+                const category: Category = await WalletController.categoryRepository.findOneBy({id: 13});
+                const savedTransaction: Transaction = await TransactionController.addNewTransaction(category, +amountOfMoney, date, 'Initial Balance', savedWalletRole);
+
+                if (savedWallet && savedWalletRole && savedTransaction) {
+                    res.status(200).json({
+                        message: "Creat wallet success!",
+                        newWallet: savedWallet,
+                        walletRole: savedWalletRole
+                    });
+                }
             }
         } catch (e) {
             res.status(500).json({
@@ -168,25 +182,54 @@ class WalletController {
                         id: walletID
                     }
                 });
-                const {name, iconID, currencyID, amountOfMoney} = req.body;
+                let {name, iconID, currencyID, amountOfMoney, date} = req.body;
+                let oldAmountOfMoney: number = updatedWallet[0].amountOfMoney;
+                amountOfMoney = parseInt(amountOfMoney);
                 updatedWallet[0].name = name;
-                updatedWallet[0].amountOfMoney = +amountOfMoney;
+                updatedWallet[0].amountOfMoney = amountOfMoney;
                 if (updatedWallet[0].currency.id !== +currencyID) {
                     updatedWallet[0].currency = await WalletController.currencyRepository.findOneBy({id: +currencyID});
                 }
                 if (updatedWallet[0].icon.id !== +iconID) {
                     updatedWallet[0].icon = await WalletController.iconWalletRepository.findOneBy({id: +iconID});
                 }
-                let result = await WalletController.walletRepository.save(updatedWallet);
-                if (result) {
-                    res.status(200).json({
-                        message: "Update wallet success!",
-                        updatedWallet: result
-                    });
+                let savedWallet = await WalletController.walletRepository.save(updatedWallet[0]);
+                if (oldAmountOfMoney !== amountOfMoney) {
+                    let walletRole: WalletRole = await WalletRoleController.getWalletRole(savedWallet.id, userID);
+                    let categoryID: number;
+                    let transactionAmount: number;
+                    if (oldAmountOfMoney < amountOfMoney) {
+                        transactionAmount = -oldAmountOfMoney + amountOfMoney;
+                        categoryID = 13;
+                    } else {
+                        transactionAmount = oldAmountOfMoney - amountOfMoney;
+                        categoryID = 5;
+                    }
+                    let category: Category = await WalletController.categoryRepository.findOneBy({id: categoryID});
+
+                    let savedTransaction: Transaction = await TransactionController.addNewTransaction(category, transactionAmount, date, 'Initial Balance', walletRole);
+
+                    if (savedWallet && savedTransaction) {
+                        res.status(200).json({
+                            message: "Update wallet success!",
+                            updatedWallet: savedWallet
+                        });
+                    } else {
+                        res.json({
+                            message: "Update wallet failed!",
+                        });
+                    }
                 } else {
-                    res.json({
-                        message: "Update wallet failed!",
-                    });
+                    if (savedWallet) {
+                        res.status(200).json({
+                            message: "Update wallet success!",
+                            updatedWallet: savedWallet
+                        });
+                    } else {
+                        res.json({
+                            message: "Update wallet failed!",
+                        });
+                    }
                 }
             } else {
                 res.status(500).json({
@@ -213,6 +256,10 @@ class WalletController {
                     res.status(200).json({
                         message: "Delete wallet success!",
                     });
+                } else {
+                    res.status(404).json({
+                        message: 'Wallet not found or not deleted.',
+                    });
                 }
             } else {
                 res.status(500).json({
@@ -234,10 +281,10 @@ class WalletController {
     static async transferMoneyToAnotherWallet(req: CustomRequest, res: Response) {
         try {
             let walletID: number = +req.params.walletID;
-            let userID: number = +req.token.userID
+            let userID: number = req.token.userID;
             let walletRoleTransfer = await WalletRoleController.getWalletRole(walletID, userID);
             if (walletRoleTransfer.role === "owner" && walletRoleTransfer.archived == false) {
-                const {money, walletIDReceived} = req.body;
+                const {money, walletIDReceived, date} = req.body;
                 let walletRoleReceived = await WalletRoleController.getWalletRole(walletIDReceived, userID);
                 if (walletRoleReceived.role === "owner" && walletRoleReceived.archived == false) {
                     const walletTransfer: Wallet[] = await WalletController.walletRepository.find({
@@ -263,6 +310,13 @@ class WalletController {
                         await WalletController.walletRepository.save(walletTransfer[0]);
                         walletReceived[0].amountOfMoney = walletReceived[0].amountOfMoney + money;
                         await WalletController.walletRepository.save(walletReceived[0]);
+
+                        const categoryTransfer: Category = await WalletController.categoryRepository.findOneBy({id: 7});
+                        const categoryReceived: Category = await WalletController.categoryRepository.findOneBy({id: 14});
+
+                        await TransactionController.addNewTransaction(categoryTransfer, money, date, "money transferred", walletRoleTransfer);
+                        await TransactionController.addNewTransaction(categoryReceived, money, date, "money received", walletRoleReceived);
+
                         res.status(200).json({
                             message: "Money transfer success!",
                             walletTransfer: walletTransfer[0],

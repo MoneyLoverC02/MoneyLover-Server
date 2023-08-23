@@ -383,12 +383,11 @@ class UserController {
                 let balance = viewBalance(transactions.transactionListIntimeBE, transactions.transactionListBeforeBE)
                 contentReport.push({
                     name: wallet.name,
-                    transIntime: transactions.transactionListIntimeBE,
+                    transInTime: transactions.transactionListIntimeBE,
                     openingBalance: balance.openingBalance,
                     endingBalance: balance.endingBalance
                 })
             }
-            // console.log(contentReport)
             let email = req.token.email
             let subject = `Monthly report in ${months[previousMonthIndex]}`
             let contentReportInMail = "";
@@ -405,8 +404,8 @@ class UserController {
                         - Transactions in time:
                         <br>
                     `;
-                let transactionIndex = 1; // Biến đếm chỉ số giao dịch
-                for (const transaction of content.transIntime) {
+                let transactionIndex = 1;
+                for (const transaction of content.transInTime) {
                     data += `
                     <br>
                         +, Index: ${transactionIndex}
