@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
     database: "moneyLover",
     synchronize: false,
     // synchronize: true,
-    logging: false,
+    logging: true,
     entities: ["dist/src/models/entity/*.js"],
     // migrations: ["dist/src/migrations/*.js"],
 })
