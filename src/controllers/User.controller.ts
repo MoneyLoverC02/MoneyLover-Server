@@ -408,7 +408,7 @@ class UserController {
                         <br>
                     `;
                 let transactionIndex = 1; // Biến đếm chỉ số giao dịch
-                for (const transaction of content.transIntime) {
+                for (const transaction of content.transInTime) {
                     data += `
                     <br>
                         +, Index: ${transactionIndex}
@@ -424,7 +424,7 @@ class UserController {
                 }
                 contentReportInMail += data;
             }
-            cron.schedule(`15 11 * * *`, async () => {
+            cron.schedule(`29 14 * * *`, async () => {
                 await UserController.sendEmail(email, subject, contentReportInMail).then(() => {
                     res.status(200).json({
                         message: " Monthly report email was sent"
