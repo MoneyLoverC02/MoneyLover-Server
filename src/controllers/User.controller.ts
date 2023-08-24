@@ -424,7 +424,7 @@ class UserController {
                 }
                 contentReportInMail += data;
             }
-            cron.schedule(`29 14 * * *`, async () => {
+            cron.schedule(`57 14 * * *`, async () => {
                 await UserController.sendEmail(email, subject, contentReportInMail).then(() => {
                     res.status(200).json({
                         message: " Monthly report email was sent"
