@@ -14,6 +14,7 @@ import iconWalletRouter from "./src/routers/IconWallet.router";
 import walletRoleRouter from "./src/routers/WalletRole.router";
 import transactionRouter from "./src/routers/Transaction.router";
 import UserController from "./src/controllers/User.controller";
+const port = process.env.PORT || 5000;
 
 AppDataSource.initialize()
     .then(() => {
@@ -169,6 +170,6 @@ io.on('connection', (socket: Socket) => {
 
 });
 
-server.listen(4000, () => {
-    console.log("Server is running at http://localhost:4000");
+server.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
 });
